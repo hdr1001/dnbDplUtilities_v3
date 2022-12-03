@@ -1,0 +1,22 @@
+{
+  "name": "dnbdplutils_v3",
+  "version": "1.0.0",
+  "description": "D&B Direct+ Utilities (version 3)",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "D&B",
+    "Direct+",
+    "Utilities",
+    "node",
+    "API"
+  ],
+  "author": "Hans de Rooij",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "dotenv": "^16.0.3"
+  }
+}
