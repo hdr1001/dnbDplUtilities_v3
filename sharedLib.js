@@ -22,40 +22,48 @@
 
 import * as https from 'https';
 
-function getHttp() {
-    const httpAttr = {
-        host: 'hdr1001.github.io',
-        path: '/blog/',
-        method: 'GET',
-        headers: {
-           'Content-Type': 'text/html'
-        }
-    };
+const dnbDplHttpAttr = {
+    host: 'plus.dnb.com',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+};
 
-    return new Promise((resolve, reject) => {
-        const httpReq = https.request(httpAttr, resp => {
-            const chunks = [];
+class Https {
+    constructor(httpAttr) {
+        this.httpAttr = httpAttr;
+    }
 
-            resp.on('error', err => reject(err));
+    execReq() {
+        return new Promise((resolve, reject) => {
+            const httpReq = https.request(this.httpAttr, resp => {
+                const chunks = [];
 
-            resp.on('data', chunk => chunks.push(chunk));
+                resp.on('error', err => reject(err));
 
-            resp.on('end', () => { //The data product is now available in full
-                const size = chunks.reduce((prev, curr) => prev + curr.length, 0);
+                resp.on('data', chunk => chunks.push(chunk));
 
-                resolve({
-                    buffBody: Buffer.concat(chunks, size),
-                    httpStatus: resp.statusCode
-                });
+                resp.on('end', () => { //The data product is now available in full
+                    const size = chunks.reduce((prev, curr) => prev + curr.length, 0);
+
+                    resolve({
+                        buffBody: Buffer.concat(chunks, size),
+                        httpStatus: resp.statusCode
+                    });
+                })
             })
-        })
 
-        httpReq.end();
-    })
+            if(this.httpAttr.method === 'POST' && this.httpAttr.body) {
+                httpReq.write(this.httpAttr.body)
+            }
+
+            httpReq.end();
+        })
+    }
 }
 
-getHttp()
-    .then(ret => {
-        console.log(ret.buffBody.toString())
-    })
-    .catch(err => console.error(err))
+export {
+    dnbDplHttpAttr,
+    Https
+};
