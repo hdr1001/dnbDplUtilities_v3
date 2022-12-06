@@ -53,7 +53,7 @@ if(base64AuthHeader) {
 
     new Https(dnbDplAuthTokenHttpAttr).execReq()
         .then(ret => {
-            console.log(ret.buffBody.toString())
+            console.log(`Status: ${ret.httpStatus}, body: ${ret.buffBody.toString()}`)
         })
         .catch(err => console.error(err));
 }
