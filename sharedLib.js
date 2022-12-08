@@ -22,12 +22,23 @@
 
 import * as https from 'https';
 
+//Read the environment variables from the .env file
+import * as dotenv from 'dotenv';
+dotenv.config();
+
+//Make sure to adhere to the D&B Direct+ rate limiting
+import { RateLimiter } from 'limiter';
+const dnbDplLimiter = new RateLimiter({ tokensPerInterval: 5, interval: 'second' });
+
+const dnbDplHttpHeaders = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${process.env.DNB_DPL_TOKEN}`
+};
+
 const dnbDplHttpAttr = {
     host: 'plus.dnb.com',
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json'
-    }
+    headers: dnbDplHttpHeaders
 };
 
 class Https {
@@ -37,28 +48,30 @@ class Https {
 
     execReq() {
         return new Promise((resolve, reject) => {
-            const httpReq = https.request(this.httpAttr, resp => {
-                const chunks = [];
-
-                resp.on('error', err => reject(err));
-
-                resp.on('data', chunk => chunks.push(chunk));
-
-                resp.on('end', () => { //The data product is now available in full
-                    const size = chunks.reduce((prev, curr) => prev + curr.length, 0);
-
-                    resolve({
-                        buffBody: Buffer.concat(chunks, size),
-                        httpStatus: resp.statusCode
-                    });
+            dnbDplLimiter.removeTokens(1).then(() => {
+                const httpReq = https.request(this.httpAttr, resp => {
+                    const chunks = [];
+    
+                    resp.on('error', err => reject(err));
+    
+                    resp.on('data', chunk => chunks.push(chunk));
+    
+                    resp.on('end', () => { //The data product is now available in full
+                        const size = chunks.reduce((prev, curr) => prev + curr.length, 0);
+    
+                        resolve({
+                            buffBody: Buffer.concat(chunks, size),
+                            httpStatus: resp.statusCode
+                        });
+                    })
                 })
+    
+                if(this.httpAttr.method === 'POST' && this.httpAttr.body) {
+                    httpReq.write(this.httpAttr.body)
+                }
+    
+                httpReq.end();
             })
-
-            if(this.httpAttr.method === 'POST' && this.httpAttr.body) {
-                httpReq.write(this.httpAttr.body)
-            }
-
-            httpReq.end();
         })
     }
 }

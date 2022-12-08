@@ -22,10 +22,6 @@
 
 import { dnbDplHttpAttr, Https } from './sharedLib.js';
 
-//Read the environment variables from the .env file
-import * as dotenv from 'dotenv';
-dotenv.config();
-
 //The HTTP attributes for requesting a D&B Direct+ authentication token
 const dnbDplAuthTokenHttpAttr = {
     ...dnbDplHttpAttr,

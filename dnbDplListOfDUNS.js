@@ -21,10 +21,7 @@
 // *********************************************************************
 
 import { dnbDplHttpAttr, Https } from './sharedLib.js';
-
-//Read the environment variables from the .env file
-import * as dotenv from 'dotenv';
-dotenv.config();
+import { readInpFile } from './sharedReadInpFile.js';
 
 //The HTTP attributes for requesting a D&B Direct+ enrichment
 const pathDnbDplDataBocks = '/v1/data/duns';
@@ -32,13 +29,13 @@ const pathDnbDplBeneficialOwner = '/v1/beneficialowner';
 const pathDnbDplFullFamTree = '/v1/familyTree';
 
 //Configuration section: Data Blocks and/or beneficial owner and/or full family tree
-const reqDnbDplEnrichment = [
+const reqDnbDplEnrichment = [ //Set doReq parameter to true to request the enrichment 
     { doReq: true, httpAttr: { ...dnbDplHttpAttr, path: pathDnbDplDataBocks } },
     { doReq: false, httpAttr: { ...dnbDplHttpAttr, path: pathDnbDplBeneficialOwner } },
     { doReq: false, httpAttr: { ...dnbDplHttpAttr, path: pathDnbDplFullFamTree } }
 ];
 
-//Configuration section: Specify which D&B Direct+ Data Blocks to request
+//Configuration section: Data Blocks, specify which blocks (@ which levels) to request
 const arrDBs = [ //Set level to 0 ⬇️ to not include the block 
     {db: 'companyinfo',              level: 2, dbShort: 'ci', version: '1'},
     {db: 'principalscontacts',       level: 3, dbShort: 'pc', version: '2'},
@@ -53,8 +50,15 @@ const arrDBs = [ //Set level to 0 ⬇️ to not include the block
     {db: 'globalbusinessranking',    level: 0, dbShort: 'br', version: '1'}
 ];
 
-//Configuration section: Specify true if a trade-up is needed, else false
-const tradeUp = false;
+//Configuration section: Data Blocks, specify trade-up is needed, else false
+const dbsTradeUp = 'hq'; //Possible values '', 'hq' or 'domhq'
+
+//Configuration section: Beneficial owner
+const productId = 'cmpbol'; //Possible values 'cmpbol' or 'cmpbos'
+const ownershipPercentage = 2.5; //Possible values range from 0.00 to 100.00
+
+//Configuration section: Full family tree, specify branch exclusion
+const fftBranchExcl = ''; //Possible values '' or 'Branches'
 
 function exeDnbDplEnrichment(sDUNS) {
     function getBlockIDs() {
@@ -69,19 +73,42 @@ function exeDnbDplEnrichment(sDUNS) {
         .map(elem => {
             const httpAttr = { ...elem.httpAttr };
 
-            //Add an authorization header to each request
-            httpAttr.headers.Authorization = 'Bearer ' + process.env.DNB_DPL_TOKEN;
+            let qryParams = null;
 
             //Configure the Data Blocks request
             if(httpAttr.path === pathDnbDplDataBocks) {
                 httpAttr.path += `/${sDUNS}`; //Identify the resource
 
                 //Construct the parameterized query string
-                const qryParams = { blockIDs: getBlockIDs(), orderReason: '6332' };
+                qryParams = { blockIDs: getBlockIDs(), orderReason: '6332' };
 
-                if(tradeUp) { qryParams.tradeUp = 'hq' }
+                if(dbsTradeUp) { qryParams.tradeUp = dbsTradeUp }
+            }
 
-                httpAttr.path += '?' + new URLSearchParams(qryParams).toString()
+            //Configure the beneficial owner request
+            if(httpAttr.path === pathDnbDplBeneficialOwner) {
+                //Construct the parameterized query string
+                qryParams = {
+                    duns: sDUNS,
+                    productId,
+                    versionId: 'v1',
+                    tradeUp: 'hq',
+                    ownershipPercentage
+                };
+            }
+
+            //Configure the full family tree request
+            if(httpAttr.path === pathDnbDplFullFamTree) {
+                httpAttr.path += `/${sDUNS}`; //Identify the resource
+
+                //Construct the parameterized query string
+                qryParams = { 'page[size]': 1000 };
+
+                if(fftBranchExcl) { qryParams.exclusionCriteria = fftBranchExcl }
+            }
+
+            if(qryParams) {
+                httpAttr.path += '?' + new URLSearchParams(qryParams).toString();
             }
 
             return httpAttr;
@@ -95,4 +122,4 @@ function exeDnbDplEnrichment(sDUNS) {
         });
 }
 
-exeDnbDplEnrichment('407809623');
+readInpFile({ root: '', dir: 'in', base: 'DUNS.txt' }).forEach(exeDnbDplEnrichment);

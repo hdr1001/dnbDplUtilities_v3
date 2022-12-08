@@ -3,3 +3,7 @@
 
 # Dependency directories
 node_modules/
+
+#Directories for in- and output data
+in/
+out/
