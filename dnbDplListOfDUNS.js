@@ -20,6 +20,8 @@
 //
 // *********************************************************************
 
+import * as path from 'path';
+import { promises as fs } from 'fs';
 import { dnbDplHttpAttr, Https } from './sharedLib.js';
 import { readInpFile } from './sharedReadInpFile.js';
 
@@ -31,9 +33,18 @@ const pathDnbDplFullFamTree = '/v1/familyTree';
 //Configuration section: Data Blocks and/or beneficial owner and/or full family tree
 const reqDnbDplEnrichment = [ //Set doReq parameter to true to request the enrichment 
     { doReq: true, httpAttr: { ...dnbDplHttpAttr, path: pathDnbDplDataBocks } },
-    { doReq: false, httpAttr: { ...dnbDplHttpAttr, path: pathDnbDplBeneficialOwner } },
-    { doReq: false, httpAttr: { ...dnbDplHttpAttr, path: pathDnbDplFullFamTree } }
+    { doReq: true, httpAttr: { ...dnbDplHttpAttr, path: pathDnbDplBeneficialOwner } },
+    { doReq: true, httpAttr: { ...dnbDplHttpAttr, path: pathDnbDplFullFamTree } }
 ];
+
+//Configuration section: input and output files
+const inpFile = { root: '', dir: 'in', base: 'DUNS.txt' };
+const outFile = { root: '', dir: 'out' };
+
+//Result persistence
+const resultToLogStatus = true;
+const resultToLogBody   = false;
+const resultToFile      = true;
 
 //Configuration section: Data Blocks, specify which blocks (@ which levels) to request
 const arrDBs = [ //Set level to 0 ⬇️ to not include the block 
@@ -67,6 +78,29 @@ function exeDnbDplEnrichment(sDUNS) {
             .map(oDB => `${oDB.db}_L${oDB.level}_v${oDB.version}`)
             .join(',')
     }
+
+    function getFileBase(reqPath) {
+        let ret = 'dnb_dpl_';
+
+        if(reqPath === pathDnbDplDataBocks) {
+            ret += arrDBs
+                .filter(elem => elem.level > 0)
+                .map(oDB => `${oDB.dbShort}_L${oDB.level}`)
+                .join('_')
+        }
+
+        if(reqPath === pathDnbDplBeneficialOwner) {
+            ret += productId
+        }
+
+        if(reqPath === pathDnbDplFullFamTree) {
+            ret += 'full_fam_tree'
+        }
+        
+        return `${ret}_${sDUNS}_${sDate}.json`
+    }
+
+    const sDate = new Date().toISOString().split('T')[0];
 
     reqDnbDplEnrichment
         .filter(elem => elem.doReq)
@@ -111,15 +145,38 @@ function exeDnbDplEnrichment(sDUNS) {
                 httpAttr.path += '?' + new URLSearchParams(qryParams).toString();
             }
 
+            if(resultToFile) {
+                httpAttr.fileBase = getFileBase(elem.httpAttr.path)
+            }
+
             return httpAttr;
         })
         .forEach(httpAttr => {
             new Https(httpAttr).execReq()
                 .then(ret => {
-                    console.log(`Status: ${ret.httpStatus}, body: ${ret.buffBody.toString()}`)
+                    if(resultToLogStatus) {
+                        console.log(`DUNS: ${sDUNS} ➡️ status: ${ret.httpStatus}`)
+                    }
+                    if(resultToLogBody) {
+                        console.log(`body: ${ret.buffBody.toString()}`)
+                    }
+
+                    if(resultToFile) {
+                        if(ret.httpStatus !== 200) {
+                            const pos = httpAttr.fileBase.indexOf('.json');
+
+                            if(pos > - 1) {
+                                httpAttr.fileBase = `${httpAttr.fileBase.slice(0, pos)}_${ret.httpStatus}${httpAttr.fileBase.slice(pos)}`
+                            }
+                        }
+
+                        fs.writeFile(path.format({ ...outFile , base: httpAttr.fileBase }), ret.buffBody)
+                            .then( /* console.log(`Wrote file ${httpAttr.fileBase} successfully`) */ )
+                            .catch(err => console.error(err.message));
+                    }
                 })
                 .catch(err => console.error(err));
         });
 }
 
-readInpFile({ root: '', dir: 'in', base: 'DUNS.txt' }).forEach(exeDnbDplEnrichment);
+readInpFile(inpFile).forEach(exeDnbDplEnrichment);
