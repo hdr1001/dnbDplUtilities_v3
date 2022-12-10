@@ -22,58 +22,13 @@
 
 import * as path from 'path';
 import { promises as fs } from 'fs';
-import { dnbDplHttpAttr, Https } from './sharedLib.js';
+import * as config from './dnbDplLodConfig.js';
+import { Https } from './sharedLib.js';
 import { readInpFile } from './sharedReadInpFile.js';
-
-//The HTTP attributes for requesting a D&B Direct+ enrichment
-const pathDnbDplDataBocks = '/v1/data/duns';
-const pathDnbDplBeneficialOwner = '/v1/beneficialowner';
-const pathDnbDplFullFamTree = '/v1/familyTree';
-
-//Configuration section: Data Blocks and/or beneficial owner and/or full family tree
-const reqDnbDplEnrichment = [ //Set doReq parameter to true to request the enrichment 
-    { doReq: true, httpAttr: { ...dnbDplHttpAttr, path: pathDnbDplDataBocks } },
-    { doReq: true, httpAttr: { ...dnbDplHttpAttr, path: pathDnbDplBeneficialOwner } },
-    { doReq: true, httpAttr: { ...dnbDplHttpAttr, path: pathDnbDplFullFamTree } }
-];
-
-//Configuration section: input and output files
-const inpFile = { root: '', dir: 'in', base: 'DUNS.txt' };
-const outFile = { root: '', dir: 'out' };
-
-//Result persistence
-const resultToLogStatus = true;
-const resultToLogBody   = false;
-const resultToFile      = true;
-
-//Configuration section: Data Blocks, specify which blocks (@ which levels) to request
-const arrDBs = [ //Set level to 0 ⬇️ to not include the block 
-    {db: 'companyinfo',              level: 2, dbShort: 'ci', version: '1'},
-    {db: 'principalscontacts',       level: 3, dbShort: 'pc', version: '2'},
-    {db: 'hierarchyconnections',     level: 1, dbShort: 'hc', version: '1'},
-    {db: 'financialstrengthinsight', level: 2, dbShort: 'fs', version: '1'},
-    {db: 'paymentinsight',           level: 0, dbShort: 'pi', version: '1'},
-    {db: 'eventfilings',             level: 0, dbShort: 'ef', version: '1'},
-    {db: 'companyfinancials',        level: 0, dbShort: 'cf', version: '2'},
-    {db: 'globalfinancials',         level: 0, dbShort: 'gf', version: '1'},
-    {db: 'esginsight',               level: 0, dbShort: 'ei', version: '1'},
-    {db: 'ownershipinsight',         level: 0, dbShort: 'oi', version: '1'},
-    {db: 'globalbusinessranking',    level: 0, dbShort: 'br', version: '1'}
-];
-
-//Configuration section: Data Blocks, specify trade-up is needed, else false
-const dbsTradeUp = 'hq'; //Possible values '', 'hq' or 'domhq'
-
-//Configuration section: Beneficial owner
-const productId = 'cmpbol'; //Possible values 'cmpbol' or 'cmpbos'
-const ownershipPercentage = 2.5; //Possible values range from 0.00 to 100.00
-
-//Configuration section: Full family tree, specify branch exclusion
-const fftBranchExcl = ''; //Possible values '' or 'Branches'
 
 function exeDnbDplEnrichment(sDUNS) {
     function getBlockIDs() {
-        return arrDBs
+        return config.arrDBs
             .filter(elem => elem.level > 0)
             .map(oDB => `${oDB.db}_L${oDB.level}_v${oDB.version}`)
             .join(',')
@@ -82,18 +37,18 @@ function exeDnbDplEnrichment(sDUNS) {
     function getFileBase(reqPath) {
         let ret = 'dnb_dpl_';
 
-        if(reqPath === pathDnbDplDataBocks) {
-            ret += arrDBs
+        if(reqPath === config.pathDnbDplDataBocks) {
+            ret += config.arrDBs
                 .filter(elem => elem.level > 0)
                 .map(oDB => `${oDB.dbShort}_L${oDB.level}`)
                 .join('_')
         }
 
-        if(reqPath === pathDnbDplBeneficialOwner) {
-            ret += productId
+        if(reqPath === config.pathDnbDplBeneficialOwner) {
+            ret += config.productId
         }
 
-        if(reqPath === pathDnbDplFullFamTree) {
+        if(reqPath === config.pathDnbDplFullFamTree) {
             ret += 'full_fam_tree'
         }
         
@@ -102,7 +57,7 @@ function exeDnbDplEnrichment(sDUNS) {
 
     const sDate = new Date().toISOString().split('T')[0];
 
-    reqDnbDplEnrichment
+    config.reqDnbDplEnrichment
         .filter(elem => elem.doReq)
         .map(elem => {
             const httpAttr = { ...elem.httpAttr };
@@ -110,42 +65,42 @@ function exeDnbDplEnrichment(sDUNS) {
             let qryParams = null;
 
             //Configure the Data Blocks request
-            if(httpAttr.path === pathDnbDplDataBocks) {
+            if(httpAttr.path === config.pathDnbDplDataBocks) {
                 httpAttr.path += `/${sDUNS}`; //Identify the resource
 
                 //Construct the parameterized query string
                 qryParams = { blockIDs: getBlockIDs(), orderReason: '6332' };
 
-                if(dbsTradeUp) { qryParams.tradeUp = dbsTradeUp }
+                if(config.dbsTradeUp) { qryParams.tradeUp = config.dbsTradeUp }
             }
 
             //Configure the beneficial owner request
-            if(httpAttr.path === pathDnbDplBeneficialOwner) {
+            if(httpAttr.path === config.pathDnbDplBeneficialOwner) {
                 //Construct the parameterized query string
                 qryParams = {
                     duns: sDUNS,
-                    productId,
+                    productId: config.productId,
                     versionId: 'v1',
                     tradeUp: 'hq',
-                    ownershipPercentage
+                    ownershipPercentage: config.ownershipPercentage
                 };
             }
 
             //Configure the full family tree request
-            if(httpAttr.path === pathDnbDplFullFamTree) {
+            if(httpAttr.path === config.pathDnbDplFullFamTree) {
                 httpAttr.path += `/${sDUNS}`; //Identify the resource
 
                 //Construct the parameterized query string
                 qryParams = { 'page[size]': 1000 };
 
-                if(fftBranchExcl) { qryParams.exclusionCriteria = fftBranchExcl }
+                if(config.fftBranchExcl) { qryParams.exclusionCriteria = config.fftBranchExcl }
             }
 
             if(qryParams) {
                 httpAttr.path += '?' + new URLSearchParams(qryParams).toString();
             }
 
-            if(resultToFile) {
+            if(config.resultToFile) {
                 httpAttr.fileBase = getFileBase(elem.httpAttr.path)
             }
 
@@ -154,14 +109,14 @@ function exeDnbDplEnrichment(sDUNS) {
         .forEach(httpAttr => {
             new Https(httpAttr).execReq()
                 .then(ret => {
-                    if(resultToLogStatus) {
+                    if(config.resultToLogStatus) {
                         console.log(`DUNS: ${sDUNS} ➡️ status: ${ret.httpStatus}`)
                     }
-                    if(resultToLogBody) {
+                    if(config.resultToLogBody) {
                         console.log(`body: ${ret.buffBody.toString()}`)
                     }
 
-                    if(resultToFile) {
+                    if(config.resultToFile) {
                         if(ret.httpStatus !== 200) {
                             const pos = httpAttr.fileBase.indexOf('.json');
 
@@ -170,7 +125,7 @@ function exeDnbDplEnrichment(sDUNS) {
                             }
                         }
 
-                        fs.writeFile(path.format({ ...outFile , base: httpAttr.fileBase }), ret.buffBody)
+                        fs.writeFile(path.format({ ...config.outFile , base: httpAttr.fileBase }), ret.buffBody)
                             .then( /* console.log(`Wrote file ${httpAttr.fileBase} successfully`) */ )
                             .catch(err => console.error(err.message));
                     }
@@ -179,4 +134,4 @@ function exeDnbDplEnrichment(sDUNS) {
         });
 }
 
-readInpFile(inpFile).forEach(exeDnbDplEnrichment);
+readInpFile(config.inpFile).forEach(exeDnbDplEnrichment);
