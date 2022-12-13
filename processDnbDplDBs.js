@@ -24,7 +24,7 @@ import * as path from 'path';
 import { promises as fs } from 'fs';
 import { RateLimiter } from 'limiter';
 
-const readFileLimiter = new RateLimiter({ tokensPerInterval: 50, interval: 'second' });
+const readFileLimiter = new RateLimiter({ tokensPerInterval: 100, interval: 'second' });
 
 const filePath = { root: '', dir: 'out' };
 
@@ -56,11 +56,41 @@ fs.readdir(path.format(filePath))
                                 const arrValues = [];
 
                                 if(org) {
+                                    //Universal data-elements
                                     arrValues.push(org.duns);
                                     arrValues.push(org.primaryName);
                                     arrValues.push(org.countryISOAlpha2Code);
     
-                                    arrValues.push(org?.dunsControlStatus?.operatingStatus?.description)
+                                    //Company information
+                                    arrValues.push(org?.dunsControlStatus?.operatingStatus?.description);
+
+                                    //Hierarchies & connections
+                                    arrValues.push(org?.corporateLinkage?.hierarchyLevel);
+                                    arrValues.push(org?.corporateLinkage?.globalUltimateFamilyTreeMembersCount);
+                                    arrValues.push(org?.corporateLinkage?.branchesCount);
+
+                                    const hierarchyLevels = [
+                                        org?.corporateLinkage?.headQuarter,
+                                        org?.corporateLinkage?.parent,
+                                        org?.corporateLinkage?.domesticUltimate,
+                                        org?.corporateLinkage?.globalUltimate
+                                    ];
+
+                                    hierarchyLevels.forEach(elem => {
+                                        arrValues.push(elem?.duns);
+                                        arrValues.push(elem?.primaryName);
+                                        arrValues.push(elem?.primaryAddress?.addressCountry?.isoAlpha2Code);
+                                    });
+
+                                    if(org.corporateLinkage && org.corporateLinkage
+                                        && org.corporateLinkage.familytreeRolesPlayed
+                                        && org.corporateLinkage.familytreeRolesPlayed.length) {
+
+                                            arrValues.push(org.corporateLinkage.familytreeRolesPlayed.map(elem => elem.description).join(','))
+                                    }
+                                    else {
+                                        arrValues.push(null)
+                                    }
                                 }
                                 else {
                                     const dbsError = dbs.error;

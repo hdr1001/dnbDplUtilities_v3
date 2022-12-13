@@ -30,8 +30,8 @@ const pathDnbDplFullFamTree = '/v1/familyTree';
 //Data Blocks and/or beneficial owner and/or full family tree
 const reqDnbDplEnrichment = [ //Set doReq parameter to true to request the enrichment 
     { doReq: true, httpAttr: { ...dnbDplHttpAttr, path: pathDnbDplDataBocks } },
-    { doReq: true, httpAttr: { ...dnbDplHttpAttr, path: pathDnbDplBeneficialOwner } },
-    { doReq: true, httpAttr: { ...dnbDplHttpAttr, path: pathDnbDplFullFamTree } }
+    { doReq: false, httpAttr: { ...dnbDplHttpAttr, path: pathDnbDplBeneficialOwner } },
+    { doReq: false, httpAttr: { ...dnbDplHttpAttr, path: pathDnbDplFullFamTree } }
 ];
 
 //Input and output files
@@ -45,10 +45,10 @@ const resultToFile      = true;
 
 //Data Blocks, specify which blocks (@ which levels) to request
 const arrDBs = [ //Set level to 0 ⬇️ to not include the block 
-    {db: 'companyinfo',               level: 2, dbShort: 'ci', version: '1'},
-    {db: 'principalscontacts',        level: 3, dbShort: 'pc', version: '2'},
+    {db: 'companyinfo',               level: 1, dbShort: 'ci', version: '1'},
+    {db: 'principalscontacts',        level: 0, dbShort: 'pc', version: '2'},
     {db: 'hierarchyconnections',      level: 1, dbShort: 'hc', version: '1'},
-    {db: 'financialstrengthinsight',  level: 2, dbShort: 'fs', version: '1'},
+    {db: 'financialstrengthinsight',  level: 0, dbShort: 'fs', version: '1'},
     {db: 'paymentinsight',            level: 0, dbShort: 'pi', version: '1'},
     {db: 'eventfilings',              level: 0, dbShort: 'ef', version: '1'},
     {db: 'companyfinancials',         level: 0, dbShort: 'cf', version: '2'},
@@ -66,7 +66,7 @@ const arrDBs = [ //Set level to 0 ⬇️ to not include the block
 ];
 
 //Data Blocks, specify trade-up is needed, else false
-const dbsTradeUp = 'hq'; //Possible values '', 'hq' or 'domhq'
+const dbsTradeUp = ''; //Possible values '', 'hq' or 'domhq'
 
 //Beneficial owner
 const productId = 'cmpbol'; //Possible values 'cmpbol' or 'cmpbos'
