@@ -30,6 +30,75 @@ const filePath = { root: '', dir: 'out' };
 
 const nullUndefToEmptyStr = elem => elem === null || elem === undefined ? '' : elem;
 
+//D&B data block address object to array conversion
+function getArrAddr(oAddr) {
+    //Check if an object is an empty object
+    function bIsEmptyObj(obj) {
+        let bRet = false;
+    
+        try {
+            if(obj === null || typeof obj === 'undefined' ||
+                    (obj.constructor === Object && Object.keys(obj).length === 0)) {
+        
+                bRet = true;
+            }
+        }
+        catch(err) {
+            console.log('Parameter passed into function bIsEmptyObj is not an object')
+        }
+    
+        return bRet;
+    }
+
+    let arrAddr = [], str = '';
+ 
+    if(!oAddr) {return arrAddr}
+ 
+    //Street address
+    if(oAddr.streetAddress) {
+        if(oAddr.streetAddress.line1) {arrAddr.push(oAddr.streetAddress.line1)}
+        if(oAddr.streetAddress.line2) {arrAddr.push(oAddr.streetAddress.line2)}
+    }
+ 
+    //Refer to alternative properties if streetAddress doesn't contain info
+    if(arrAddr.length === 0) {
+        if(oAddr.streetName) {
+            str = oAddr.streetName;
+
+            if(oAddr.streetNumber) {
+                str += ' ' + oAddr.streetNumber
+            }
+
+            arrAddr.push(str);
+
+            str = '';
+        }
+    }
+ 
+    //Postalcode & city
+    if(oAddr.postalCode) {str = oAddr.postalCode}
+
+    if(!bIsEmptyObj(oAddr.addressLocality)) {
+        str.length > 0 ? str += ' ' + oAddr.addressLocality.name : str = oAddr.addressLocality.name
+    }
+
+    if(!bIsEmptyObj(oAddr.addressRegion) && oAddr.addressRegion.abbreviatedName) {
+        str.length > 0 ? str += ' (' + oAddr.addressRegion.abbreviatedName + ')' : str = oAddr.addressRegion.abbreviatedName
+    }
+
+    if(str.length > 0) {arrAddr.push(str)}
+ 
+    //Country
+    if(oAddr.addressCountry && oAddr.addressCountry.name) {arrAddr.push(oAddr.addressCountry.name)}
+ 
+    //Is registered address
+    if(oAddr.isRegisteredAddress) {
+        arrAddr.push('Entity registered at this address');
+    }
+ 
+    return arrAddr;
+}
+
 fs.readdir(path.format(filePath))
     .then(arrFiles => 
         arrFiles
@@ -64,6 +133,8 @@ fs.readdir(path.format(filePath))
                                     //Company information
                                     arrValues.push(org?.dunsControlStatus?.operatingStatus?.description);
 
+                                    console.log(getArrAddr(org.primaryAddress));
+
                                     //Hierarchies & connections
                                     arrValues.push(org?.corporateLinkage?.hierarchyLevel);
                                     arrValues.push(org?.corporateLinkage?.globalUltimateFamilyTreeMembersCount);
@@ -79,6 +150,7 @@ fs.readdir(path.format(filePath))
                                     hierarchyLevels.forEach(elem => {
                                         arrValues.push(elem?.duns);
                                         arrValues.push(elem?.primaryName);
+                                        console.log(getArrAddr(elem?.primaryAddress));
                                         arrValues.push(elem?.primaryAddress?.addressCountry?.isoAlpha2Code);
                                     });
 
