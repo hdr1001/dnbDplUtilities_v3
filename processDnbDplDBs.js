@@ -50,50 +50,49 @@ function getArrAddr(oAddr) {
         return bRet;
     }
 
-    let arrAddr = [], str = '';
+    const ADDR1  = 0;
+    const ADDR2  = 1;
+    const PC     = 2;
+    const CITY   = 3;
+    const REGION = 4;
+    const CTRY   = 5;
+
+    let arrAddr = [null, null, null, null, null, null];
  
-    if(!oAddr) {return arrAddr}
+    if(bIsEmptyObj(oAddr)) {return arrAddr}
  
     //Street address
     if(oAddr.streetAddress) {
-        if(oAddr.streetAddress.line1) {arrAddr.push(oAddr.streetAddress.line1)}
-        if(oAddr.streetAddress.line2) {arrAddr.push(oAddr.streetAddress.line2)}
+        if(oAddr.streetAddress.line1) {arrAddr[ADDR1] = oAddr.streetAddress.line1}
+        if(oAddr.streetAddress.line2) {arrAddr[ADDR2] = oAddr.streetAddress.line2}
     }
  
     //Refer to alternative properties if streetAddress doesn't contain info
-    if(arrAddr.length === 0) {
+    if(arrAddr[ADDR1] === null && arrAddr[ADDR2] === null) {
         if(oAddr.streetName) {
-            str = oAddr.streetName;
+            arrAddr[ADDR1] = oAddr.streetName;
 
             if(oAddr.streetNumber) {
-                str += ' ' + oAddr.streetNumber
+                arrAddr[ADDR1] += ' ' + oAddr.streetNumber
             }
-
-            arrAddr.push(str);
-
-            str = '';
         }
     }
  
-    //Postalcode & city
-    if(oAddr.postalCode) {str = oAddr.postalCode}
+    //Postalcode
+    if(oAddr.postalCode) {arrAddr[PC] = oAddr.postalCode}
 
+    //City
     if(!bIsEmptyObj(oAddr.addressLocality)) {
-        str.length > 0 ? str += ' ' + oAddr.addressLocality.name : str = oAddr.addressLocality.name
+        arrAddr[CITY] = oAddr.addressLocality.name
     }
 
     if(!bIsEmptyObj(oAddr.addressRegion) && oAddr.addressRegion.abbreviatedName) {
-        str.length > 0 ? str += ' (' + oAddr.addressRegion.abbreviatedName + ')' : str = oAddr.addressRegion.abbreviatedName
+        arrAddr[REGION] = oAddr.addressRegion.abbreviatedName
     }
 
-    if(str.length > 0) {arrAddr.push(str)}
- 
     //Country
-    if(oAddr.addressCountry && oAddr.addressCountry.name) {arrAddr.push(oAddr.addressCountry.name)}
- 
-    //Is registered address
-    if(oAddr.isRegisteredAddress) {
-        arrAddr.push('Entity registered at this address');
+    if(oAddr.addressCountry && oAddr.addressCountry.isoAlpha2Code) {
+        arrAddr[CTRY] = oAddr.addressCountry.isoAlpha2Code
     }
  
     return arrAddr;
@@ -122,23 +121,26 @@ fs.readdir(path.format(filePath))
 
                                 const org = dbs.organization;
 
-                                const arrValues = [];
+                                let arrValues = [];
 
                                 if(org) {
                                     //Universal data-elements
                                     arrValues.push(org.duns);
                                     arrValues.push(org.primaryName);
-                                    arrValues.push(org.countryISOAlpha2Code);
     
                                     //Company information
                                     arrValues.push(org?.dunsControlStatus?.operatingStatus?.description);
 
-                                    console.log(getArrAddr(org.primaryAddress));
+                                    //Company information primary address
+                                    arrValues = arrValues.concat(getArrAddr(org?.primaryAddress));
 
                                     //Hierarchies & connections
                                     arrValues.push(org?.corporateLinkage?.hierarchyLevel);
                                     arrValues.push(org?.corporateLinkage?.globalUltimateFamilyTreeMembersCount);
                                     arrValues.push(org?.corporateLinkage?.branchesCount);
+
+                                    const ftRoles = org?.corporateLinkage?.familytreeRolesPlayed;
+                                    let isGlobalUlt = ftRoles && ftRoles.findIndex(elem => elem.description === 'Global Ultimate') !== -1;
 
                                     const hierarchyLevels = [
                                         org?.corporateLinkage?.headQuarter,
@@ -147,11 +149,13 @@ fs.readdir(path.format(filePath))
                                         org?.corporateLinkage?.globalUltimate
                                     ];
 
+                                    if(isGlobalUlt) { hierarchyLevels[1] = org?.corporateLinkage?.domesticUltimate }
+
                                     hierarchyLevels.forEach(elem => {
                                         arrValues.push(elem?.duns);
                                         arrValues.push(elem?.primaryName);
-                                        console.log(getArrAddr(elem?.primaryAddress));
-                                        arrValues.push(elem?.primaryAddress?.addressCountry?.isoAlpha2Code);
+
+                                        arrValues = arrValues.concat(getArrAddr(elem?.primaryAddress));
                                     });
 
                                     if(org.corporateLinkage && org.corporateLinkage
@@ -163,7 +167,7 @@ fs.readdir(path.format(filePath))
                                     else {
                                         arrValues.push(null)
                                     }
-                                }
+                                } 
                                 else {
                                     const dbsError = dbs.error;
 
