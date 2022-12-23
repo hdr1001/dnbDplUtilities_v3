@@ -1,7 +1,7 @@
 // *********************************************************************
 //
-// Process D&B Direct+ data blocks written to files
-// JavaScript code file: processDnbDplDBs.js
+// Process D&B Direct+ IDentity Resolution responses
+// JavaScript code file: processDnbDplIDR.js
 //
 // Copyright 2022 Hans de Rooij
 //
@@ -35,28 +35,34 @@ fs.readdir(path.format(filePath))
     .then(arrFiles => 
         arrFiles
             .filter(fn => fn.endsWith('.json'))
-            .filter(fn => fn.indexOf('dnb_dpl_cmpbo') === -1)
-            .filter(fn => fn.indexOf('dnb_dpl_full_fam') === -1)
+            .filter(fn => fn.indexOf('dpl_idr') > -1)
             .forEach(fn => 
                 readFileLimiter.removeTokens(1)
                     .then(() => {
                         fs.readFile(path.format({ ...filePath, base: fn }))
                             .then(file => {
-                                let dbs;
+                                let idrResp;
 
                                 try {
-                                    dbs = JSON.parse(file)
+                                    idrResp = JSON.parse(file)
                                 }
                                 catch(err) {
                                     console.error(err.message);
                                     return;
                                 }
 
-                                const org = dbs.organization;
+                                const mcs = idrResp.matchCandidates;
 
                                 let arrValues = [];
 
-                                if(org) {
+                                //Echo IDentity Resolution input
+                                arrValues.push(idrResp?.inquiryDetail?.customerReference[0]);
+                                arrValues.push(idrResp?.inquiryDetail?.customerReference[1]);
+                                arrValues.push(idrResp?.inquiryDetail?.duns);
+                                
+                                if(mcs && mcs.length) {
+                                    const org = mcs[0].organization;
+
                                     //Universal data-elements
                                     arrValues.push(org.duns);
                                     arrValues.push(org.primaryName);
@@ -67,46 +73,14 @@ fs.readdir(path.format(filePath))
                                     //Company information primary address
                                     arrValues = arrValues.concat(getArrAddr(org?.primaryAddress));
 
-                                    //Hierarchies & connections
-                                    arrValues.push(org?.corporateLinkage?.hierarchyLevel);
-                                    arrValues.push(org?.corporateLinkage?.globalUltimateFamilyTreeMembersCount);
-                                    arrValues.push(org?.corporateLinkage?.branchesCount);
-
-                                    const ftRoles = org?.corporateLinkage?.familytreeRolesPlayed;
-                                    let isGlobalUlt = ftRoles && ftRoles.findIndex(elem => elem.description === 'Global Ultimate') !== -1;
-
-                                    const hierarchyLevels = [
-                                        org?.corporateLinkage?.headQuarter,
-                                        org?.corporateLinkage?.parent,
-                                        org?.corporateLinkage?.domesticUltimate,
-                                        org?.corporateLinkage?.globalUltimate
-                                    ];
-
-                                    if(isGlobalUlt) { hierarchyLevels[1] = org?.corporateLinkage?.domesticUltimate }
-
-                                    hierarchyLevels.forEach(elem => {
-                                        arrValues.push(elem?.duns);
-                                        arrValues.push(elem?.primaryName);
-
-                                        arrValues = arrValues.concat(getArrAddr(elem?.primaryAddress));
-                                    });
-
-                                    if(org.corporateLinkage && org.corporateLinkage
-                                        && org.corporateLinkage.familytreeRolesPlayed
-                                        && org.corporateLinkage.familytreeRolesPlayed.length) {
-
-                                            arrValues.push(org.corporateLinkage.familytreeRolesPlayed.map(elem => elem.description).join(','))
-                                    }
-                                    else {
-                                        arrValues.push(null)
-                                    }
+                                    //Registration number
+                                    arrValues.push(org?.registrationNumbers[0]?.registrationNumber);
                                 } 
                                 else {
-                                    const dbsError = dbs.error;
+                                    const idrRespError = idrResp.error;
 
-                                    if(dbsError) {
-                                        arrValues.push(dbs?.inquiryDetail?.duns);
-                                        arrValues.push(dbsError?.errorMessage);
+                                    if(idrRespError) {
+                                        arrValues.push(idrRespError?.errorMessage);
                                         arrValues.push('😞');
                                     }
                                 }
