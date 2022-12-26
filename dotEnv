@@ -1,4 +1,10 @@
 ENV_VAR=👌
+
 DNB_DPL_KEY=""
 DNB_DPL_SECRET=""
 DNB_DPL_TOKEN=""
+
+PGHOST="<endpoint_hostname>"
+PGDATABASE="<dbname>"
+PGUSER="<username>"
+PGPASSWORD="<password>"
