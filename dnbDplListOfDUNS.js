@@ -23,8 +23,11 @@
 import * as path from 'path';
 import { promises as fs } from 'fs';
 import * as config from './dnbDplLodConfig.js';
-import { Https } from './sharedLib.js';
+import { Https, Pool, pgConn } from './sharedLib.js';
 import { readInpFile } from './sharedReadInpFile.js';
+
+//Pool of database connections
+let pgPool;
 
 function exeDnbDplEnrichment(sDUNS) {
     function getBlockIDs() {
@@ -129,9 +132,44 @@ function exeDnbDplEnrichment(sDUNS) {
                             .then( /* console.log(`Wrote file ${httpAttr.fileBase} successfully`) */ )
                             .catch(err => console.error(err.message));
                     }
+
+                    if(config.resultToDatabase) {
+                        let sSQL = 'INSERT INTO products_dnb (duns, dbs, dbs_obtained_at, dbs_http_status) VALUES ';
+                        sSQL    += '($1, $2, $3, $4) ';
+                        sSQL    += 'ON CONFLICT (duns) DO ';
+                        sSQL    += 'UPDATE SET dbs = $2, dbs_obtained_at = $3, dbs_http_status = $4';
+
+                        pgPool.query(
+                            sSQL,
+                            [sDUNS, ret.buffBody.toString(), Date.now(), ret.httpStatus]
+                        )
+                        .then(rslt => {
+                            if(rslt.rowCount=== 1) {
+                                console.log(`Success writing DUNS ${sDUNS} to the database`)
+                            }
+                            else {
+                                console.log(`Writing DUNS ${sDUNS} to the database affected ${rslt.rowCount} rows 🤔`)
+                            }
+                        })
+                        .catch(err => console.error(err.message));
+                    }
                 })
                 .catch(err => console.error(err));
         });
 }
 
-readInpFile(config.inpFile).forEach(exeDnbDplEnrichment);
+if(config.resultToDatabase) {
+    if(pgConn.database) {
+        pgPool = new Pool(pgConn);
+
+        pgPool.connect()
+            .then(clnt => { clnt.release(); readInpFile(config.inpFile).forEach(exeDnbDplEnrichment) })
+            .catch(err => console.error(err.message));
+    }
+    else {
+        console.error('Please configure variable pgConn correctly');
+    }
+}
+else { //No database connection needed
+    readInpFile(config.inpFile).forEach(exeDnbDplEnrichment);
+}

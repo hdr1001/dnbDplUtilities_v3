@@ -42,6 +42,7 @@ const outFile = { root: '', dir: 'out' };
 const resultToLogStatus = true;
 const resultToLogBody   = false;
 const resultToFile      = true;
+const resultToDatabase  = true;
 
 //Data Blocks, specify which blocks (@ which levels) to request
 const arrDBs = [ //Set level to 0 ⬇️ to not include the block 
@@ -88,6 +89,7 @@ export {
     resultToLogStatus,
     resultToLogBody,
     resultToFile,
+    resultToDatabase,
 
     arrDBs,
 

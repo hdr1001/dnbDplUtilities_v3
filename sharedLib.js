@@ -21,6 +21,7 @@
 // *********************************************************************
 
 import * as https from 'https';
+import pg from 'pg';
 
 //Read the environment variables from the .env file
 import * as dotenv from 'dotenv';
@@ -30,6 +31,7 @@ dotenv.config();
 import { RateLimiter } from 'limiter';
 const dnbDplLimiter = new RateLimiter({ tokensPerInterval: 5, interval: 'second' });
 
+//Generic D&B Direct+ HTTP request attributes
 const dnbDplHttpHeaders = {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${process.env.DNB_DPL_TOKEN}`
@@ -41,6 +43,7 @@ const dnbDplHttpAttr = {
     headers: dnbDplHttpHeaders
 };
 
+//Class for executing HTTPS requests
 class Https {
     constructor(httpAttr) {
         this.httpAttr = httpAttr;
@@ -76,7 +79,27 @@ class Https {
     }
 }
 
+//Connect to the Neon serverless Postgres database
+const { Pool } = pg;
+
+const { PGHOST, PGDATABASE, PGUSER, PGPASSWORD } = process.env;
+
+const pgConn = {
+    host: PGHOST,
+    database: PGDATABASE,
+    user: PGUSER,
+    password: PGPASSWORD,
+    port: 5432,
+    ssl: true,
+    max: 10, // set pool max size to 10
+    idleTimeoutMillis: 1000, // close idle clients after 1 second
+    connectionTimeoutMillis: 9999, // return an error after 10 seconds if connection could not be established
+    maxUses: 7500, // close (and replace) a connection after it has been used 7500 times
+}
+
 export {
     dnbDplHttpAttr,
-    Https
+    Https,
+    Pool,
+    pgConn
 };
