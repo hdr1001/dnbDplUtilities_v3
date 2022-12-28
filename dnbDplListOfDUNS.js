@@ -133,7 +133,9 @@ function exeDnbDplEnrichment(sDUNS) {
                             .catch(err => console.error(err.message));
                     }
 
-                    if(config.resultToDatabase) {
+                    if(config.resultToDatabase
+                            && httpAttr.path.slice(0, config.pathDnbDplDataBocks.length) === config.pathDnbDplDataBocks) {
+                        
                         let sSQL = 'INSERT INTO products_dnb (duns, dbs, dbs_obtained_at, dbs_http_status) VALUES ';
                         sSQL    += '($1, $2, $3, $4) ';
                         sSQL    += 'ON CONFLICT (duns) DO ';
