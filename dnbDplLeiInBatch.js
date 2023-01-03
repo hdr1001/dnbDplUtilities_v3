@@ -20,7 +20,10 @@
 //
 // *********************************************************************
 
-import { Https } from './sharedLib.js';
+import { Https, Pool, pgConn } from './sharedLib.js';
+
+//Pool of database connections
+let pgPool;
 
 //Generic Gleif Lei HTTP request attributes
 const gleifLeiHttpHeaders = {
@@ -48,3 +51,32 @@ new Https(httpAttr).execReq()
         console.log(JSON.stringify(JSON.parse(ret.buffBody.toString()), null, 3))
     })
     .catch(err => console.error(err));
+
+if(pgConn.database) {
+    pgPool = new Pool(pgConn);
+
+    pgPool.connect()
+        .then(clnt => {
+            let sSql = 'SELECT ';
+            sSql    += '   duns, ';
+            sSql    += '   dbs->\'organization\'->\'registrationNumbers\' AS regnums, ';
+            sSql    += '   dbs->\'organization\'->\'countryISOAlpha2Code\' AS isoctry ';
+            sSql    += 'FROM products_dnb';
+
+            clnt.query(sSql)
+                .then(res => {
+                    clnt.release();
+
+                    res.rows.forEach(row => console.log(`${row.duns}, ${row.regnums.length}, ${row.isoctry}`));
+                })
+                .catch(err => {
+                    clnt.release();
+
+                    console.error('query error', err.message);
+                })
+            })
+        .catch(err => console.error(err.message));
+}
+else {
+    console.error('Please configure variable pgConn correctly');
+}
