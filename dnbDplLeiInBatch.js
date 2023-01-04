@@ -39,18 +39,32 @@ const gleifLeiHttpAttr = {
 
 const leiQryStr = {
     'page[size]': 10,
-    'page[number]': 1,
-    'filter[entity.legalAddress.country]': 'nl',
-    'filter[entity.registeredAs]': '33011433'
+    'page[number]': 1
 };
 
-const httpAttr = { ...gleifLeiHttpAttr, path: gleifLeiHttpAttr.path + '?' + new URLSearchParams(leiQryStr).toString() };
+const nullUndefToEmptyStr = elem => elem === null || elem === undefined ? '' : elem;
 
-new Https(httpAttr).execReq()
-    .then(ret => {
-        console.log(JSON.stringify(JSON.parse(ret.buffBody.toString()), null, 3))
-    })
-    .catch(err => console.error(err));
+function getPrimaryRegNum(regNums, ctry) {
+    let regNum = '';
+
+    const primaryRegNums = regNums.filter(oRegNum => oRegNum.isPreferredRegistrationNumber);
+
+    if(primaryRegNums.length) {
+        regNum = primaryRegNums[0].registrationNumber
+    }
+    else if(regNums.length) {
+        regNum = regNums[0].registrationNumber
+    }
+
+    switch (ctry.toLowerCase()) {
+        case 'ch':
+            regNum = regNum.replace(/[^a-z0-9]/gi, ''); break;
+        case 'it':
+            if(regNum.slice(0, 2).toLowerCase() === 'it') { regNum = regNum.slice(2) }; break;
+    }
+
+    return regNum;
+}
 
 if(pgConn.database) {
     pgPool = new Pool(pgConn);
@@ -59,6 +73,7 @@ if(pgConn.database) {
         .then(clnt => {
             let sSql = 'SELECT ';
             sSql    += '   duns, ';
+            sSql    += '   dbs->\'organization\'->\'primaryName\' AS primname, ';
             sSql    += '   dbs->\'organization\'->\'registrationNumbers\' AS regnums, ';
             sSql    += '   dbs->\'organization\'->\'countryISOAlpha2Code\' AS isoctry ';
             sSql    += 'FROM products_dnb';
@@ -67,16 +82,72 @@ if(pgConn.database) {
                 .then(res => {
                     clnt.release();
 
-                    res.rows.forEach(row => console.log(`${row.duns}, ${row.regnums.length}, ${row.isoctry}`));
+                    res.rows.forEach(row => {
+                        const arrValues = [];
+
+                        arrValues.push(row.duns);
+                        arrValues.push(row.primname);
+                        arrValues.push(row.isoctry);
+
+                        const primaryRegNum = getPrimaryRegNum(row.regnums, row.isoctry);
+
+                        if(primaryRegNum) {
+                            arrValues.push(primaryRegNum);
+
+                            const regNumLeiQryStr = {
+                                ...leiQryStr,
+                                'filter[entity.registeredAs]': primaryRegNum,
+                                'filter[entity.legalAddress.country]': row.isoctry.toLowerCase()
+                            };
+
+                            const httpAttr = {
+                                ...gleifLeiHttpAttr,
+                                path: gleifLeiHttpAttr.path + '?' + new URLSearchParams(regNumLeiQryStr).toString()
+                            };
+    
+                            new Https(httpAttr).execReq()
+                                .then(ret => {
+                                    let leiRec = null, sErr = '';
+                                    
+                                    try {
+                                        leiRec = JSON.parse(ret.buffBody.toString());
+                                    }
+                                    catch(err) {
+                                        sErr = 'Error parsing the Gleif LEI return';
+                                    }
+
+                                    if(leiRec && leiRec.data && leiRec.data.length) {
+                                        const data0 = leiRec.data[0];
+
+                                        arrValues.push(data0.id);
+                                        arrValues.push(data0?.attributes?.entity?.legalName?.name);
+                                        arrValues.push(data0?.attributes?.entity?.legalAddress?.country);
+                                    }
+                                    else {
+                                        if(!sErr) {
+                                            sErr = 'No LEI returned for submitted registration number'
+                                        }
+
+                                        arrValues.push(sErr);
+                                    }
+
+                                    console.log(arrValues.map(nullUndefToEmptyStr).join('|'));
+                                })
+                                .catch(err => console.error(err));
+                        }
+                        else {
+                            console.log('No valid registration number on D&B data')
+                        }
+                    })
                 })
                 .catch(err => {
                     clnt.release();
 
                     console.error('query error', err.message);
                 })
-            })
+        })
         .catch(err => console.error(err.message));
 }
 else {
-    console.error('Please configure variable pgConn correctly');
+    console.error('Please configure variable pgConn correctly')
 }
