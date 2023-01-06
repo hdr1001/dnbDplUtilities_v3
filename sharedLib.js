@@ -45,13 +45,15 @@ const dnbDplHttpAttr = {
 
 //Class for executing HTTPS requests
 class Https {
-    constructor(httpAttr) {
+    constructor(httpAttr, limiter) {
         this.httpAttr = httpAttr;
+
+        this.limiter = limiter ? limiter : dnbDplLimiter;
     }
 
     execReq() {
         return new Promise((resolve, reject) => {
-            dnbDplLimiter.removeTokens(1).then(() => {
+            this.limiter.removeTokens(1).then(() => {
                 const httpReq = https.request(this.httpAttr, resp => {
                     const chunks = [];
     

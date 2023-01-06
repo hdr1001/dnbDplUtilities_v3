@@ -30,7 +30,7 @@ const pathDnbDplFullFamTree = '/v1/familyTree';
 //Data Blocks and/or beneficial owner and/or full family tree
 const reqDnbDplEnrichment = [ //Set doReq parameter to true to request the enrichment 
     { doReq: true, httpAttr: { ...dnbDplHttpAttr, path: pathDnbDplDataBocks } },
-    { doReq: true, httpAttr: { ...dnbDplHttpAttr, path: pathDnbDplBeneficialOwner } },
+    { doReq: false, httpAttr: { ...dnbDplHttpAttr, path: pathDnbDplBeneficialOwner } },
     { doReq: false, httpAttr: { ...dnbDplHttpAttr, path: pathDnbDplFullFamTree } }
 ];
 

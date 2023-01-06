@@ -22,6 +22,10 @@
 
 import { Https, Pool, pgConn } from './sharedLib.js';
 
+//Rate limit the number of requests to the Gleif API
+import { RateLimiter } from 'limiter';
+const gleifLimiter = new RateLimiter({ tokensPerInterval: 3, interval: 'second' });
+
 //Pool of database connections
 let pgPool;
 
@@ -105,30 +109,26 @@ if(pgConn.database) {
                                 path: gleifLeiHttpAttr.path + '?' + new URLSearchParams(regNumLeiQryStr).toString()
                             };
     
-                            new Https(httpAttr).execReq()
+                            new Https(httpAttr, gleifLimiter).execReq()
                                 .then(ret => {
-                                    let leiRec = null, sErr = '';
+                                    let leiRec = null;
                                     
                                     try {
                                         leiRec = JSON.parse(ret.buffBody.toString());
+
+                                        if(leiRec && leiRec.data && leiRec.data.length) {
+                                            const data0 = leiRec.data[0];
+    
+                                            arrValues.push(data0.id);
+                                            arrValues.push(data0?.attributes?.entity?.legalName?.name);
+                                            arrValues.push(data0?.attributes?.entity?.legalAddress?.country);
+                                        }
+                                        else {
+                                            arrValues.push('No LEI returned for submitted registration number')
+                                        }
                                     }
                                     catch(err) {
-                                        sErr = 'Error parsing the Gleif LEI return';
-                                    }
-
-                                    if(leiRec && leiRec.data && leiRec.data.length) {
-                                        const data0 = leiRec.data[0];
-
-                                        arrValues.push(data0.id);
-                                        arrValues.push(data0?.attributes?.entity?.legalName?.name);
-                                        arrValues.push(data0?.attributes?.entity?.legalAddress?.country);
-                                    }
-                                    else {
-                                        if(!sErr) {
-                                            sErr = 'No LEI returned for submitted registration number'
-                                        }
-
-                                        arrValues.push(sErr);
+                                        arrValues.push('Error parsing the Gleif LEI record return')
                                     }
 
                                     console.log(arrValues.map(nullUndefToEmptyStr).join('|'));
@@ -136,7 +136,9 @@ if(pgConn.database) {
                                 .catch(err => console.error(err));
                         }
                         else {
-                            console.log('No valid registration number on D&B data')
+                            arrValues.push('No valid registration number available on D&B data');
+
+                            console.log(arrValues.map(nullUndefToEmptyStr).join('|'));
                         }
                     })
                 })
