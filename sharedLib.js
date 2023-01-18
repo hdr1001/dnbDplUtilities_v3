@@ -29,7 +29,7 @@ dotenv.config();
 
 //Make sure to adhere to the D&B Direct+ rate limiting
 import { RateLimiter } from 'limiter';
-const dnbDplLimiter = new RateLimiter({ tokensPerInterval: 5, interval: 'second' });
+const dnbDplLimiter = new RateLimiter({ tokensPerInterval: 4, interval: 'second' });
 
 //Generic D&B Direct+ HTTP request attributes
 const dnbDplHttpHeaders = {

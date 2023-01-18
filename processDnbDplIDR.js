@@ -58,7 +58,6 @@ fs.readdir(path.format(filePath))
                                 //Echo IDentity Resolution input
                                 arrValues.push(idrResp?.inquiryDetail?.customerReference[0]);
                                 arrValues.push(idrResp?.inquiryDetail?.customerReference[1]);
-                                arrValues.push(idrResp?.inquiryDetail?.duns);
                                 
                                 if(mcs && mcs.length) {
                                     const org = mcs[0].organization;
@@ -75,6 +74,12 @@ fs.readdir(path.format(filePath))
 
                                     //Registration number
                                     arrValues.push(org?.registrationNumbers[0]?.registrationNumber);
+
+                                    //MatchGrade & confidence code
+                                    const qlty = mcs[0].matchQualityInformation;
+
+                                    arrValues.push(qlty?.matchGrade)
+                                    arrValues.push(qlty?.confidenceCode)
                                 } 
                                 else {
                                     const idrRespError = idrResp.error;
