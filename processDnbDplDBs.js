@@ -23,7 +23,14 @@
 import * as path from 'path';
 import { promises as fs } from 'fs';
 import { RateLimiter } from 'limiter';
-import { getArrAddr } from './sharedFlattenDplObj.js';
+import {
+    getArrAddr,
+    getArrRegNum,
+    getArrNumEmpl,
+    getArrRevenue,
+    getLatestFin,
+    getIndCode
+} from './sharedFlattenDplObj.js';
 
 const readFileLimiter = new RateLimiter({ tokensPerInterval: 100, interval: 'second' });
 
@@ -57,32 +64,113 @@ fs.readdir(path.format(filePath))
                                 let arrValues = [];
 
                                 if(org) {
-                                    //Universal data-elements
-                                    arrValues.push(org.duns);
-                                    arrValues.push(org.primaryName);
-    
-                                    //Company information
+                                    //Header
+                                    //duns|opStatus|LEI|regNum1|regNum1Desc|regNum2|regNum2Desc|regNum3|regNum3Desc|regNum4|regNum4Desc|primaryName|adrLine1|adrLine2|postalCode|adrLocality|adrRegion|adrCountry|legalForm|actCode1|actCode2|
+                                    //hasSignificantEvents|hasDisastrousEvents|hasOperationalEvents|hasBusinessDiscontinued|hasFireOccurred|hasBurglaryOccured|hasControlChange|hasPartnerChange|hasCEOChange|hasNameChange|hasCompanyMoved|
+                                    //hasLegalEvents|hasOpenLegalEvents|hasOtherLegalEvents|hasBankruptcy|hasOpenBankruptcy|hasInsolvency|hasLiquidation|hasSuspensionOfPayments|hasCriminalProceedings|hasOpenCriminalProceedings|hasJudgments|
+                                    //hasOpenJudgments|hasSuits|hasOpenSuits|hasFinancialEmbarrassment|hasOpenFinancialEmbarrassment|hasDebarments|hasOpenDebarments|hasLiens|hasOpenLiens|hasClaims|hasOpenClaims|hasFinancingEvents|
+                                    //hasOpenFinancingEvents|hasSecuredFilings|hasOpenSecuredFilings|hasLetterOfAgreement|hasLetterOfLiability|hasOpenLetterOfLiability|hasRemovedLetterOfLiability|orgSizeCat|orgSizeCatDate|
+                                    //indvNumEmplValue|indvNumEmplReliability|indvNumEmplInfoScope|consNumEmplValue|consNumEmplReliability|consNumEmplInfoScope|salesRev|totalAssets|currency|units|reliability|scope|stmtFrom|stmtTo|
+                                    //hierarchyLevel|treeMembersCount|branchesCount|hqParentDuns|hqParentName|hqParentAdrLine1|hqParentAdrLine2|hqParentPostalCode|hqParentAdrLocality|hqParentAdrRegion|hqParentAdrCountry|
+                                    //domUltDuns|domUltName|domUltAdrLine1|domUltAdrLine2|domUltPostalCode|domUltAdrLocality|domUltAdrRegion|domUltAdrCountry|globalUltDuns|globalUltName|globalUltAdrLine1|globalUltAdrLine2|
+                                    //globalUltPostalCode|globalUltAdrLocality|globalUltAdrRegion|globalUltAdrCountry|
+
+                                    arrValues.push(org.duns); //Universal data-elements, D&B DUNS
+
+                                    //Company information, operating status
                                     arrValues.push(org?.dunsControlStatus?.operatingStatus?.description);
 
+                                    arrValues.push('todo_LEI'); //LEI todo
+
+                                    //Company information, registration numbers
+                                    arrValues = arrValues.concat(getArrRegNum(org?.registrationNumbers, 4));
+
+                                    arrValues.push(org.primaryName); //Universal data-elements, company name
+    
                                     //Company information primary address
                                     arrValues = arrValues.concat(getArrAddr(org?.primaryAddress));
 
+                                    //Company information legal form table 4
+                                    arrValues.push(org?.registeredDetails?.legalForm?.dnbCode);
+
+                                    arrValues.push(getIndCode(org?.industryCodes, 29104)); //todo
+                                    arrValues.push('todo_ActCode2'); //todo
+
+                                    //Legal events from the Filings & Events data block
+                                    arrValues.push(org?.significantEvents?.hasSignificantEvents);
+                                    arrValues.push(org?.significantEvents?.hasDisastrousEvents);
+                                    arrValues.push(org?.significantEvents?.hasOperationalEvents);
+                                    arrValues.push(org?.significantEvents?.hasBusinessDiscontinued);
+                                    arrValues.push(org?.significantEvents?.hasFireOccurred);
+                                    arrValues.push(org?.significantEvents?.hasBurglaryOccured);
+                                    arrValues.push(org?.significantEvents?.hasControlChange);
+                                    arrValues.push(org?.significantEvents?.hasPartnerChange);
+                                    arrValues.push(org?.significantEvents?.hasCEOChange);
+                                    arrValues.push(org?.significantEvents?.hasNameChange);
+                                    arrValues.push(org?.hasCompanyMoved);
+                                    arrValues.push(org?.legalEvents?.hasLegalEvents);
+                                    arrValues.push(org?.legalEvents?.hasOpenLegalEvents);
+                                    arrValues.push(org?.legalEvents?.hasOtherLegalEvents);
+                                    arrValues.push(org?.legalEvents?.hasBankruptcy);
+                                    arrValues.push(org?.legalEvents?.hasOpenBankruptcy);
+                                    arrValues.push(org?.legalEvents?.hasInsolvency);
+                                    arrValues.push(org?.legalEvents?.hasLiquidation);
+                                    arrValues.push(org?.legalEvents?.hasSuspensionOfPayments);
+                                    arrValues.push(org?.legalEvents?.hasCriminalProceedings);
+                                    arrValues.push(org?.legalEvents?.hasOpenCriminalProceedings);
+                                    arrValues.push(org?.legalEvents?.hasJudgments);
+                                    arrValues.push(org?.legalEvents?.hasOpenJudgments);
+                                    arrValues.push(org?.legalEvents?.hasSuits);
+                                    arrValues.push(org?.legalEvents?.hasOpenSuits);
+                                    arrValues.push(org?.legalEvents?.hasFinancialEmbarrassment);
+                                    arrValues.push(org?.legalEvents?.hasOpenFinancialEmbarrassment);
+                                    arrValues.push(org?.legalEvents?.hasDebarments);
+                                    arrValues.push(org?.legalEvents?.hasOpenDebarments);
+                                    arrValues.push(org?.legalEvents?.hasLiens);
+                                    arrValues.push(org?.legalEvents?.hasOpenLiens);
+                                    arrValues.push(org?.legalEvents?.hasClaims);
+                                    arrValues.push(org?.legalEvents?.hasOpenClaims);
+                                    arrValues.push(org?.financingEvents?.hasFinancingEvents);
+                                    arrValues.push(org?.financingEvents?.hasOpenFinancingEvents);
+                                    arrValues.push(org?.financingEvents?.hasSecuredFilings);
+                                    arrValues.push(org?.financingEvents?.hasOpenSecuredFilings);
+                                    arrValues.push(org?.financingEvents?.hasLetterOfAgreement);
+                                    arrValues.push(org?.financingEvents?.hasLetterOfLiability);
+                                    arrValues.push(org?.financingEvents?.hasOpenLetterOfLiability);
+                                    arrValues.push(org?.financingEvents?.hasRemovedLetterOfLiability);
+
+                                    //Company information entity size category
+                                    arrValues.push(org?.organizationSizeCategory?.description);
+                                    arrValues.push('Not available');
+
+                                    //Company information number of employees
+                                    arrValues = arrValues.concat(getArrNumEmpl(org?.numberOfEmployees, [9066, 9068]));
+                                    arrValues = arrValues.concat(getArrNumEmpl(org?.numberOfEmployees, [9067]));
+
+                                    //Company information yearly revenue
+                                    const finValues = getLatestFin(org?.latestFinancials);
+
+                                    if(finValues[2]) { //If currency available, no need to revert to modelled/estimated values 
+                                        arrValues = arrValues.concat(finValues)
+                                    }
+                                    else { //No currency available, revert to modelled/estimated values
+                                        arrValues = arrValues.concat(getArrRevenue(org?.financials, [9094, 9093]));
+                                    }
+                                    
                                     //Hierarchies & connections
                                     arrValues.push(org?.corporateLinkage?.hierarchyLevel);
                                     arrValues.push(org?.corporateLinkage?.globalUltimateFamilyTreeMembersCount);
                                     arrValues.push(org?.corporateLinkage?.branchesCount);
 
-                                    const ftRoles = org?.corporateLinkage?.familytreeRolesPlayed;
-                                    let isGlobalUlt = ftRoles && ftRoles.findIndex(elem => elem.description === 'Global Ultimate') !== -1;
-
                                     const hierarchyLevels = [
-                                        org?.corporateLinkage?.headQuarter,
                                         org?.corporateLinkage?.parent,
                                         org?.corporateLinkage?.domesticUltimate,
                                         org?.corporateLinkage?.globalUltimate
                                     ];
 
-                                    if(isGlobalUlt) { hierarchyLevels[1] = org?.corporateLinkage?.domesticUltimate }
+                                    if(org?.corporateLinkage?.headQuarter?.duns && !org?.corporateLinkage?.parent?.duns) {
+                                        hierarchyLevels[0] = org?.corporateLinkage?.headQuarter
+                                    }
 
                                     hierarchyLevels.forEach(elem => {
                                         arrValues.push(elem?.duns);
@@ -90,7 +178,7 @@ fs.readdir(path.format(filePath))
 
                                         arrValues = arrValues.concat(getArrAddr(elem?.primaryAddress));
                                     });
-
+/*
                                     if(org.corporateLinkage && org.corporateLinkage
                                         && org.corporateLinkage.familytreeRolesPlayed
                                         && org.corporateLinkage.familytreeRolesPlayed.length) {
@@ -100,6 +188,7 @@ fs.readdir(path.format(filePath))
                                     else {
                                         arrValues.push(null)
                                     }
+*/
                                 } 
                                 else {
                                     const dbsError = dbs.error;

@@ -68,7 +68,9 @@ fs.readdir(path.format(filePath))
     
                                     //Company information
                                     arrValues.push(org?.dunsControlStatus?.operatingStatus?.description);
+                                    arrValues.push(org?.primaryAddress?.addressCountry?.isoAlpha2Code);
 
+/*
                                     //Company information primary address
                                     arrValues = arrValues.concat(getArrAddr(org?.primaryAddress));
 
@@ -80,13 +82,21 @@ fs.readdir(path.format(filePath))
 
                                     arrValues.push(qlty?.matchGrade)
                                     arrValues.push(qlty?.confidenceCode)
+*/
                                 } 
                                 else {
                                     const idrRespError = idrResp.error;
 
                                     if(idrRespError) {
-                                        arrValues.push(idrRespError?.errorMessage);
-                                        arrValues.push('😞');
+                                        arrValues.push(`${idrRespError?.errorMessage} (${idrRespError?.errorCode})`);
+
+                                        let errInfo = '';
+
+                                        if(idrResp?.dunsControlStatus?.dunsTransfers && idrResp.dunsControlStatus.dunsTransfers.length) {
+                                            errInfo = idrResp.dunsControlStatus.dunsTransfers[0].retainedDUNS
+                                        }
+
+                                        arrValues.push(errInfo ? errInfo : '😞');
                                     }
                                 }
 

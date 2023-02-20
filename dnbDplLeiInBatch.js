@@ -21,6 +21,8 @@
 // *********************************************************************
 
 import { Https, Pool, pgConn } from './sharedLib.js';
+import * as path from 'path';
+import { promises as fs } from 'fs';
 
 //Rate limit the number of requests to the Gleif API
 import { RateLimiter } from 'limiter';
@@ -65,12 +67,83 @@ function getPrimaryRegNum(regNums, ctry) {
             regNum = regNum.replace(/[^a-z0-9]/gi, ''); break;
         case 'it':
             if(regNum.slice(0, 2).toLowerCase() === 'it') { regNum = regNum.slice(2) }; break;
+        case 'fr':
+            const sirenRegnum = regNums.filter(oRegNum => oRegNum.typeDnBCode === 2078);
+
+            if(sirenRegnum) { regNum = sirenRegnum[0].registrationNumber } ; break;
+        case 'se':
+            if(regNum.length === 10) {
+                regNum = regNum.slice(0, 6) + '-' + regNum.slice(-4)
+            }
+
+            break;
     }
 
     return regNum;
 }
 
-if(pgConn.database) {
+function getLei(reqParams) {
+    const regNumLeiQryStr = {
+        ...leiQryStr,
+        'filter[entity.registeredAs]': reqParams.primRegNum,
+        'filter[entity.legalAddress.country]': reqParams.isoCtry.toLowerCase()
+    };
+
+    const httpAttr = {
+        ...gleifLeiHttpAttr,
+        path: gleifLeiHttpAttr.path + '?' + new URLSearchParams(regNumLeiQryStr).toString()
+    };
+
+    return new Https(httpAttr, gleifLimiter).execReq()
+}
+
+function writeToConsole(reqParams, respLei) {
+    console.log([
+        reqParams.duns,
+        reqParams.primName,
+        reqParams.isoCtry,
+        reqParams.primRegNum
+    ].concat(
+        respLei.err ?
+            [
+                respLei.err
+            ]
+        :
+            [
+                respLei.lei,
+                respLei.name,
+                respLei.ctry,
+            ]
+    ).map(nullUndefToEmptyStr).join('|'));
+}
+
+function processLeiReturn(leiRet, reqParams) {
+    let leiRec = null, respLei = {};
+            
+    try {
+        leiRec = JSON.parse(leiRet.buffBody.toString());
+
+        if(leiRec && leiRec.data && leiRec.data.length) {
+            const data0 = leiRec.data[0];
+
+            respLei.lei = data0.id;
+            respLei.name = data0?.attributes?.entity?.legalName?.name;
+            respLei.ctry = data0?.attributes?.entity?.legalAddress?.country;
+        }
+        else {
+            respLei.err  = 'No LEI returned for submitted registration number'
+        }
+    }
+    catch(err) {
+        respLei.err = 'Error parsing the Gleif LEI record return'
+    }
+
+    writeToConsole(reqParams, respLei);
+}
+
+if(pgConn.database && 1 === 0) { //Remove "&& 1 === 0" to process duns from database
+    console.log('Processing duns from database');
+
     pgPool = new Pool(pgConn);
 
     pgPool.connect()
@@ -87,60 +160,22 @@ if(pgConn.database) {
                     clnt.release();
 
                     res.rows.forEach(row => {
-                        const arrValues = [];
+                        const reqParams = {
+                            duns: row.duns,
+                            primName: row.primname,
+                            isoCtry: row.isoctry,
+                            primRegNum: getPrimaryRegNum(row.regnums, row.isoctry)
+                        };
 
-                        arrValues.push(row.duns);
-                        arrValues.push(row.primname);
-                        arrValues.push(row.isoctry);
-
-                        const primaryRegNum = getPrimaryRegNum(row.regnums, row.isoctry);
-
-                        if(primaryRegNum) {
-                            arrValues.push(primaryRegNum);
-
-                            const regNumLeiQryStr = {
-                                ...leiQryStr,
-                                'filter[entity.registeredAs]': primaryRegNum,
-                                'filter[entity.legalAddress.country]': row.isoctry.toLowerCase()
-                            };
-
-                            const httpAttr = {
-                                ...gleifLeiHttpAttr,
-                                path: gleifLeiHttpAttr.path + '?' + new URLSearchParams(regNumLeiQryStr).toString()
-                            };
-    
-                            new Https(httpAttr, gleifLimiter).execReq()
-                                .then(ret => {
-                                    let leiRec = null;
-                                    
-                                    try {
-                                        leiRec = JSON.parse(ret.buffBody.toString());
-
-                                        if(leiRec && leiRec.data && leiRec.data.length) {
-                                            const data0 = leiRec.data[0];
-    
-                                            arrValues.push(data0.id);
-                                            arrValues.push(data0?.attributes?.entity?.legalName?.name);
-                                            arrValues.push(data0?.attributes?.entity?.legalAddress?.country);
-                                        }
-                                        else {
-                                            arrValues.push('No LEI returned for submitted registration number')
-                                        }
-                                    }
-                                    catch(err) {
-                                        arrValues.push('Error parsing the Gleif LEI record return')
-                                    }
-
-                                    console.log(arrValues.map(nullUndefToEmptyStr).join('|'));
-                                })
+                        if(reqParams.primRegNum) {
+                            getLei(reqParams)
+                                .then(ret => processLeiReturn(ret, reqParams))
                                 .catch(err => console.error(err));
                         }
                         else {
-                            arrValues.push('No valid registration number available on D&B data');
-
-                            console.log(arrValues.map(nullUndefToEmptyStr).join('|'));
+                            writeToConsole(reqParams, { err: 'No valid registration number available on D&B data' });
                         }
-                    })
+                   })
                 })
                 .catch(err => {
                     clnt.release();
@@ -151,5 +186,52 @@ if(pgConn.database) {
         .catch(err => console.error(err.message));
 }
 else {
-    console.error('Please configure variable pgConn correctly')
+    console.error('Processing duns from json files containing data blocks')
+
+    const readFileLimiter = new RateLimiter({ tokensPerInterval: 100, interval: 'second' });
+
+    const filePath = { root: '', dir: 'out' };
+    
+    fs.readdir(path.format(filePath))
+        .then(arrFiles => 
+            arrFiles
+                .filter(fn => fn.endsWith('.json'))
+                .forEach(fn => 
+                    readFileLimiter.removeTokens(1)
+                        .then(() => {
+                            fs.readFile(path.format({ ...filePath, base: fn }))
+                                .then(file => {
+                                    let dbs;
+    
+                                    try {
+                                        dbs = JSON.parse(file)
+                                    }
+                                    catch(err) {
+                                        console.error(err.message);
+                                        return;
+                                    }
+    
+                                    const org = dbs.organization;
+
+                                    const reqParams = {
+                                        duns: org.duns,
+                                        primName: org.primaryName,
+                                        isoCtry: org.countryISOAlpha2Code,
+                                        primRegNum: getPrimaryRegNum(org?.registrationNumbers, org.countryISOAlpha2Code)
+                                    }
+
+                                    if(reqParams.primRegNum) {
+                                        getLei(reqParams)
+                                            .then(ret => processLeiReturn(ret, reqParams))
+                                            .catch(err => console.error(err));
+                                    }
+                                    else {
+                                        writeToConsole(reqParams, { err: 'No valid registration number available on D&B data' });
+                                    }
+                                })
+                                .catch(err => console.error(err.message))
+                        })
+                        .catch(err => console.error(err.message))
+                )
+        )
 }
