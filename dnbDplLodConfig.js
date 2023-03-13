@@ -46,13 +46,13 @@ const resultToDatabase  = false;
 
 //Data Blocks, specify which blocks (@ which levels) to request
 const arrDBs = [ //Set level to 0 ⬇️ to not include the block 
-    {db: 'companyinfo',               level: 1, dbShort: 'ci', version: '1'},
+    {db: 'companyinfo',               level: 2, dbShort: 'ci', version: '1'},
     {db: 'principalscontacts',        level: 0, dbShort: 'pc', version: '2'},
-    {db: 'hierarchyconnections',      level: 0, dbShort: 'hc', version: '1'},
+    {db: 'hierarchyconnections',      level: 1, dbShort: 'hc', version: '1'},
     {db: 'financialstrengthinsight',  level: 0, dbShort: 'fs', version: '1'},
     {db: 'paymentinsight',            level: 0, dbShort: 'pi', version: '1'},
-    {db: 'eventfilings',              level: 0, dbShort: 'ef', version: '1'},
-    {db: 'companyfinancials',         level: 0, dbShort: 'cf', version: '2'},
+    {db: 'eventfilings',              level: 1, dbShort: 'ef', version: '1'},
+    {db: 'companyfinancials',         level: 1, dbShort: 'cf', version: '2'},
     {db: 'globalfinancials',          level: 0, dbShort: 'gf', version: '1'},
     {db: 'esginsight',                level: 0, dbShort: 'ei', version: '1'},
     {db: 'ownershipinsight',          level: 0, dbShort: 'oi', version: '1'},
@@ -67,10 +67,10 @@ const arrDBs = [ //Set level to 0 ⬇️ to not include the block
 ];
 
 //Data Blocks, specify trade-up is needed, else false
-const dbsTradeUp = ''; //Possible values '', 'hq' or 'domhq'
+const dbsTradeUp = 'hq'; //Possible values '', 'hq' or 'domhq'
 
 //Beneficial owner
-const productId = 'cmpbol'; //Possible values 'cmpbol' or 'cmpbos'
+const productId = 'cmpbos'; //Possible values 'cmpbol' or 'cmpbos'
 const ownershipPercentage = 2.5; //Possible values range from 0.00 to 100.00
 
 //Full family tree, specify branch exclusion

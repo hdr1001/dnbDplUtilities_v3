@@ -65,20 +65,17 @@ fs.readdir(path.format(filePath))
 
                                 if(org) {
                                     //Header
-                                    //duns|opStatus|LEI|regNum1|regNum1Desc|regNum2|regNum2Desc|regNum3|regNum3Desc|regNum4|regNum4Desc|primaryName|adrLine1|adrLine2|postalCode|adrLocality|adrRegion|adrCountry|legalForm|actCode1|actCode2|
-                                    //hasSignificantEvents|hasDisastrousEvents|hasOperationalEvents|hasBusinessDiscontinued|hasFireOccurred|hasBurglaryOccured|hasControlChange|hasPartnerChange|hasCEOChange|hasNameChange|hasCompanyMoved|
-                                    //hasLegalEvents|hasOpenLegalEvents|hasOtherLegalEvents|hasBankruptcy|hasOpenBankruptcy|hasInsolvency|hasLiquidation|hasSuspensionOfPayments|hasCriminalProceedings|hasOpenCriminalProceedings|hasJudgments|
-                                    //hasOpenJudgments|hasSuits|hasOpenSuits|hasFinancialEmbarrassment|hasOpenFinancialEmbarrassment|hasDebarments|hasOpenDebarments|hasLiens|hasOpenLiens|hasClaims|hasOpenClaims|hasFinancingEvents|
-                                    //hasOpenFinancingEvents|hasSecuredFilings|hasOpenSecuredFilings|hasLetterOfAgreement|hasLetterOfLiability|hasOpenLetterOfLiability|hasRemovedLetterOfLiability|orgSizeCat|orgSizeCatDate|
-                                    //indvNumEmplValue|indvNumEmplReliability|indvNumEmplInfoScope|consNumEmplValue|consNumEmplReliability|consNumEmplInfoScope|salesRev|totalAssets|currency|units|reliability|scope|stmtFrom|stmtTo|
-                                    //hierarchyLevel|treeMembersCount|branchesCount|hqParentDuns|hqParentName|hqParentAdrLine1|hqParentAdrLine2|hqParentPostalCode|hqParentAdrLocality|hqParentAdrRegion|hqParentAdrCountry|
-                                    //domUltDuns|domUltName|domUltAdrLine1|domUltAdrLine2|domUltPostalCode|domUltAdrLocality|domUltAdrRegion|domUltAdrCountry|globalUltDuns|globalUltName|globalUltAdrLine1|globalUltAdrLine2|
-                                    //globalUltPostalCode|globalUltAdrLocality|globalUltAdrRegion|globalUltAdrCountry|
+                                    //duns|LEI|regNum1|regNum1Desc|regNum2|regNum2Desc|regNum3|regNum3Desc|regNum4|regNum4Desc|
+                                    //primaryName|adrLine1|adrLine2|postalCode|adrLocality|adrRegion|adrCountry|legalForm|actCode1|actCode2|
+                                    //opStatus|opStatusDate|opSubStatus|hasBankruptcy|hasOpenBankruptcy|hasInsolvency|hasLiquidation|hasSuspensionOfPayments|orgSizeCat|
+                                    //indvNumEmplValue|indvNumEmplReliability|indvNumEmplInfoScope|consNumEmplValue|consNumEmplReliability|consNumEmplInfoScope|
+                                    //salesRev|totalAssets|currency|units|reliability|scope|stmtFrom|stmtTo|
+                                    //hierarchyLevel|treeMembersCount|branchesCount|
+                                    //hqParentDuns|hqParentName|hqParentAdrLine1|hqParentAdrLine2|hqParentPostalCode|hqParentAdrLocality|hqParentAdrRegion|hqParentAdrCountry|
+                                    //domUltDuns|domUltName|domUltAdrLine1|domUltAdrLine2|domUltPostalCode|domUltAdrLocality|domUltAdrRegion|domUltAdrCountry|
+                                    //globalUltDuns|globalUltName|globalUltAdrLine1|globalUltAdrLine2|globalUltPostalCode|globalUltAdrLocality|globalUltAdrRegion|globalUltAdrCountry|
 
                                     arrValues.push(org.duns); //Universal data-elements, D&B DUNS
-
-                                    //Company information, operating status
-                                    arrValues.push(org?.dunsControlStatus?.operatingStatus?.description);
 
                                     arrValues.push('todo_LEI'); //LEI todo
 
@@ -96,52 +93,20 @@ fs.readdir(path.format(filePath))
                                     arrValues.push(getIndCode(org?.industryCodes, 29104)); //todo
                                     arrValues.push('todo_ActCode2'); //todo
 
+                                    //Company information, operating status
+                                    arrValues.push(org?.dunsControlStatus?.operatingStatus?.description);
+                                    arrValues.push(org?.dunsControlStatus?.operatingStatus?.startDate);
+                                    arrValues.push(org?.dunsControlStatus?.operatingSubStatus?.description);
+
                                     //Legal events from the Filings & Events data block
-                                    arrValues.push(org?.significantEvents?.hasSignificantEvents);
-                                    arrValues.push(org?.significantEvents?.hasDisastrousEvents);
-                                    arrValues.push(org?.significantEvents?.hasOperationalEvents);
-                                    arrValues.push(org?.significantEvents?.hasBusinessDiscontinued);
-                                    arrValues.push(org?.significantEvents?.hasFireOccurred);
-                                    arrValues.push(org?.significantEvents?.hasBurglaryOccured);
-                                    arrValues.push(org?.significantEvents?.hasControlChange);
-                                    arrValues.push(org?.significantEvents?.hasPartnerChange);
-                                    arrValues.push(org?.significantEvents?.hasCEOChange);
-                                    arrValues.push(org?.significantEvents?.hasNameChange);
-                                    arrValues.push(org?.hasCompanyMoved);
-                                    arrValues.push(org?.legalEvents?.hasLegalEvents);
-                                    arrValues.push(org?.legalEvents?.hasOpenLegalEvents);
-                                    arrValues.push(org?.legalEvents?.hasOtherLegalEvents);
                                     arrValues.push(org?.legalEvents?.hasBankruptcy);
                                     arrValues.push(org?.legalEvents?.hasOpenBankruptcy);
                                     arrValues.push(org?.legalEvents?.hasInsolvency);
                                     arrValues.push(org?.legalEvents?.hasLiquidation);
                                     arrValues.push(org?.legalEvents?.hasSuspensionOfPayments);
-                                    arrValues.push(org?.legalEvents?.hasCriminalProceedings);
-                                    arrValues.push(org?.legalEvents?.hasOpenCriminalProceedings);
-                                    arrValues.push(org?.legalEvents?.hasJudgments);
-                                    arrValues.push(org?.legalEvents?.hasOpenJudgments);
-                                    arrValues.push(org?.legalEvents?.hasSuits);
-                                    arrValues.push(org?.legalEvents?.hasOpenSuits);
-                                    arrValues.push(org?.legalEvents?.hasFinancialEmbarrassment);
-                                    arrValues.push(org?.legalEvents?.hasOpenFinancialEmbarrassment);
-                                    arrValues.push(org?.legalEvents?.hasDebarments);
-                                    arrValues.push(org?.legalEvents?.hasOpenDebarments);
-                                    arrValues.push(org?.legalEvents?.hasLiens);
-                                    arrValues.push(org?.legalEvents?.hasOpenLiens);
-                                    arrValues.push(org?.legalEvents?.hasClaims);
-                                    arrValues.push(org?.legalEvents?.hasOpenClaims);
-                                    arrValues.push(org?.financingEvents?.hasFinancingEvents);
-                                    arrValues.push(org?.financingEvents?.hasOpenFinancingEvents);
-                                    arrValues.push(org?.financingEvents?.hasSecuredFilings);
-                                    arrValues.push(org?.financingEvents?.hasOpenSecuredFilings);
-                                    arrValues.push(org?.financingEvents?.hasLetterOfAgreement);
-                                    arrValues.push(org?.financingEvents?.hasLetterOfLiability);
-                                    arrValues.push(org?.financingEvents?.hasOpenLetterOfLiability);
-                                    arrValues.push(org?.financingEvents?.hasRemovedLetterOfLiability);
 
                                     //Company information entity size category
                                     arrValues.push(org?.organizationSizeCategory?.description);
-                                    arrValues.push('Not available');
 
                                     //Company information number of employees
                                     arrValues = arrValues.concat(getArrNumEmpl(org?.numberOfEmployees, [9066, 9068]));

@@ -40,15 +40,17 @@ function bIsEmptyObj(obj) {
 
 //D&B data block address object to array conversion
 function getArrAddr(oAddr) {
-    const ADDR1  = 0;
-    const ADDR2  = 1;
-    const PC     = 2;
-    const CITY   = 3;
-    const REGION = 4;
-    const CTRY   = 5;
+    const ADDR1       = 0;
+    const ADDR2       = 1;
+    const PC          = 2;
+    const CITY        = 3;
+    const REGION_CODE = 4;
+//    const REGION_ABBR = 4;
+    const CTRY_ISO    = 5;
+//    const CTRY_FULL   = 7;
 
     //Initialize the return array
-    const arrAddr = new Array(CTRY + 1);
+    const arrAddr = new Array(CTRY_ISO + 1);
  
     if(bIsEmptyObj(oAddr)) {return arrAddr}
  
@@ -78,13 +80,15 @@ function getArrAddr(oAddr) {
     }
 
     //State, province or region
-    if(!bIsEmptyObj(oAddr.addressRegion) && oAddr.addressRegion.abbreviatedName) {
-        arrAddr[REGION] = oAddr.addressRegion.abbreviatedName
+    if(!bIsEmptyObj(oAddr.addressRegion)) {
+        if(oAddr.addressRegion.isoSubDivisionCode) { arrAddr[REGION_CODE] = oAddr.addressRegion.isoSubDivisionCode }
+//        if(oAddr.addressRegion.isoSubDivisionName) { arrAddr[REGION_ABBR] = oAddr.addressRegion.isoSubDivisionName }
     }
 
     //Country
-    if(oAddr.addressCountry && oAddr.addressCountry.isoAlpha2Code) {
-        arrAddr[CTRY] = oAddr.addressCountry.isoAlpha2Code
+    if(oAddr.addressCountry) {
+        if(oAddr.addressCountry.isoAlpha2Code) { arrAddr[CTRY_ISO] = oAddr.addressCountry.isoAlpha2Code }
+//        if(oAddr.addressCountry.name) { arrAddr[CTRY_FULL] = oAddr.addressCountry.name }
     }
  
     return arrAddr;
@@ -237,7 +241,22 @@ function getIndCode(indCodes, codeType) {
         return null
     }
 
-    return indCodesOfType.sort((elem1, elem2) => elem1 - elem2)[0].code
+    return indCodesOfType
+        .sort((elem1, elem2) => elem1.priority - elem2.priority)
+        .map(elem => elem.code)
 }
 
-export { getArrAddr, getArrRegNum, getArrNumEmpl, getArrRevenue, getLatestFin, getIndCode };
+//D&B data block Principals & Contacts get the DUNS of a principal
+function getPrincipalDUNS(principal) {
+    let ret = null;
+
+    if(principal && principal.idNumbers && principal.idNumbers.length) {
+        const arrDUNS = principal.idNumbers.filter(id => id.idType.dnbCode === 3575)
+
+        if(arrDUNS.length) { return arrDUNS[0].idNumber}
+    }
+
+    return ret;
+}
+
+export { getArrAddr, getArrRegNum, getArrNumEmpl, getArrRevenue, getLatestFin, getIndCode, getPrincipalDUNS };
