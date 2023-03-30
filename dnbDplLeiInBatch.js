@@ -63,21 +63,103 @@ function getPrimaryRegNum(regNums, ctry) {
     }
 
     switch (ctry.toLowerCase()) {
+        case 'at':
+            const atTrRegnum = regNums.filter(oRegNum => oRegNum.typeDnBCode === 1336);
+
+            if(atTrRegnum.length && atTrRegnum[0].registrationNumber.slice(0, 2) === 'FN') {
+                regNum = atTrRegnum[0].registrationNumber.slice(2)
+            }
+
+            break;
+
+        case 'be':
+            const enterpriseRegnum = regNums.filter(oRegNum => oRegNum.typeDnBCode === 800);
+
+            if(enterpriseRegnum.length) { regNum = enterpriseRegnum[0].registrationNumber }
+            
+            break;
+
         case 'ch':
-            regNum = regNum.replace(/[^a-z0-9]/gi, ''); break;
+            regNum = regNum.replace(/[^a-z0-9]/gi, '');
+
+            break;
+
         case 'it':
-            if(regNum.slice(0, 2).toLowerCase() === 'it') { regNum = regNum.slice(2) }; break;
+            if(regNum.slice(0, 2).toLowerCase() === 'it') { regNum = regNum.slice(2) }
+            
+            break;
+
+        case 'fi':
+            const fiChRegnum = regNums.filter(oRegNum => oRegNum.typeDnBCode === 553);
+
+            if(fiChRegnum.length) { regNum = fiChRegnum[0].registrationNumber.replace(/(.)(?=.$)/, '$1-'); }
+            
+            break;
+
         case 'fr':
             const sirenRegnum = regNums.filter(oRegNum => oRegNum.typeDnBCode === 2078);
 
-            if(sirenRegnum) { regNum = sirenRegnum[0].registrationNumber } ; break;
+            if(sirenRegnum.length) { regNum = sirenRegnum[0].registrationNumber }
+            
+            break;
+
+        case 'gr':
+            const grCocRegnum = regNums.filter(oRegNum => oRegNum.typeDnBCode === 14246);
+
+            if(grCocRegnum.length) { regNum = grCocRegnum[0].registrationNumber }
+            
+            break;
+
+        case 'hu':
+            const huRegnum = regNums.filter(oRegNum => oRegNum.typeDnBCode === 1359);
+
+            if(huRegnum.length) {
+                regNum = huRegnum[0].registrationNumber.slice(0, 2);
+                regNum += "-" + huRegnum[0].registrationNumber.slice(2, 4);
+                regNum += "-" + huRegnum[0].registrationNumber.slice(4);
+            }
+            
+            break;
+    
+        case 'no': //this is just 50/50 when executing a gleif search
+            const noEnterpriseRegNum = regNums.filter(oRegNum => oRegNum.typeDnBCode === 1699);
+
+            if(noEnterpriseRegNum.length && noEnterpriseRegNum[0].registrationNumber.length === 9) {
+                regNum = noEnterpriseRegNum[0].registrationNumber.slice(0, 3);
+                regNum += ' ' + noEnterpriseRegNum[0].registrationNumber.slice(3, 6);
+                regNum += ' ' + noEnterpriseRegNum[0].registrationNumber.slice(-3);
+            }
+            
+            break;
+        
+        case 'pl':
+            const plCcRegnum = regNums.filter(oRegNum => oRegNum.typeDnBCode === 18519);
+
+            if(plCcRegnum.length) { regNum = plCcRegnum[0].registrationNumber }
+            
+            break;
+
+        case 'ro': //this is just 50/50 when executing a gleif search
+            const roRegnum = regNums.filter(oRegNum => oRegNum.typeDnBCode === 1436);
+
+            if(roRegnum.length) { regNum = roRegnum[0].registrationNumber }
+            
+            break;
+
         case 'se':
             if(regNum.length === 10) {
                 regNum = regNum.slice(0, 6) + '-' + regNum.slice(-4)
             }
 
             break;
-    }
+
+        case 'si':
+            const siRegnum = regNums.filter(oRegNum => oRegNum.typeDnBCode === 9409);
+
+            if(siRegnum.length) { regNum = siRegnum[0].registrationNumber + '000' }
+            
+            break;
+}
 
     return regNum;
 }
@@ -210,7 +292,7 @@ else {
                                         console.error(err.message);
                                         return;
                                     }
-    
+
                                     const org = dbs.organization;
 
                                     const reqParams = {

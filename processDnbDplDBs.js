@@ -76,17 +76,17 @@ fs.readdir(path.format(filePath))
                                     //globalUltDuns|globalUltName|globalUltAdrLine1|globalUltAdrLine2|globalUltPostalCode|globalUltAdrLocality|globalUltAdrRegion|globalUltAdrCountry|
 
                                     arrValues.push(org.duns); //Universal data-elements, D&B DUNS
-
+/*
                                     arrValues.push('todo_LEI'); //LEI todo
 
                                     //Company information, registration numbers
                                     arrValues = arrValues.concat(getArrRegNum(org?.registrationNumbers, 4));
-
+*/
                                     arrValues.push(org.primaryName); //Universal data-elements, company name
-    
+   
                                     //Company information primary address
-                                    arrValues = arrValues.concat(getArrAddr(org?.primaryAddress));
-
+                                     arrValues = arrValues.concat(getArrAddr(org?.primaryAddress));
+/*
                                     //Company information legal form table 4
                                     arrValues.push(org?.registeredDetails?.legalForm?.dnbCode);
 
@@ -100,8 +100,10 @@ fs.readdir(path.format(filePath))
 
                                     //Legal events from the Filings & Events data block
                                     arrValues.push(org?.legalEvents?.hasBankruptcy);
+                                    arrValues.push(org?.legalEvents?.bankruptcy?.mostRecentFilingDate);
                                     arrValues.push(org?.legalEvents?.hasOpenBankruptcy);
                                     arrValues.push(org?.legalEvents?.hasInsolvency);
+                                    arrValues.push(org?.legalEvents?.insolvency?.mostRecentFilingDate);
                                     arrValues.push(org?.legalEvents?.hasLiquidation);
                                     arrValues.push(org?.legalEvents?.hasSuspensionOfPayments);
 
