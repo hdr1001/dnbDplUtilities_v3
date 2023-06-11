@@ -75,12 +75,18 @@ function getPrimaryRegNum(regNums, ctry) {
         case 'be':
             const enterpriseRegnum = regNums.filter(oRegNum => oRegNum.typeDnBCode === 800);
 
-            if(enterpriseRegnum.length) { regNum = enterpriseRegnum[0].registrationNumber }
+            //if(enterpriseRegnum.length) { regNum = enterpriseRegnum[0].registrationNumber }
+            
+            if(enterpriseRegnum.length && enterpriseRegnum[0].registrationNumber.length === 10) {
+                regNum = enterpriseRegnum[0].registrationNumber.slice(0, 4);
+                regNum += '.' + enterpriseRegnum[0].registrationNumber.slice(4, 7);
+                regNum += '.' + enterpriseRegnum[0].registrationNumber.slice(-3);
+            }
             
             break;
 
         case 'ch':
-            regNum = regNum.replace(/[^a-z0-9]/gi, '');
+            //regNum = regNum.replace(/[^a-z0-9]/gi, '');
 
             break;
 
@@ -106,7 +112,12 @@ function getPrimaryRegNum(regNums, ctry) {
         case 'gr':
             const grCocRegnum = regNums.filter(oRegNum => oRegNum.typeDnBCode === 14246);
 
-            if(grCocRegnum.length) { regNum = grCocRegnum[0].registrationNumber }
+            if(grCocRegnum.length === 12) {
+                regNum = grCocRegnum[0].registrationNumber
+            }
+            else {
+                regNum = '000000000000'.slice(0, 12 - grCocRegnum[0].registrationNumber.length) + grCocRegnum[0].registrationNumber
+            }
             
             break;
 
