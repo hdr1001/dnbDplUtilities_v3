@@ -48,7 +48,7 @@ function anaCreditLayout(oDnbDplDBs, bHeader) {
     arrValues.push(bHeader ? new Header(oDnbDplDBs.map121.duns.desc) : oDnbDplDBs.map121.duns.path);
 
     // LEI placeholder
-    arrValues.push(bHeader ? new Header('LEI') : 'LEI placeholder');
+    arrValues.push(bHeader ? new Header('LEI', null, 'DUNS') : 'LEI placeholder');
 
     // List the entities external registration numbers & associated types
     arrValues = arrValues.concat( oDnbDplDBs.regNumsToArray(
@@ -57,11 +57,11 @@ function anaCreditLayout(oDnbDplDBs, bHeader) {
             oDnbDplDBs.const.regNum.component.ecbType
         ],
         2,
-        bHeader
+        bHeader && new Header(null, null, 'DUNS')
     ));
 
     // Primary name
-    arrValues.push(bHeader ? new Header(oDnbDplDBs.map121.primaryName.desc) : oDnbDplDBs.map121.primaryName.path);
+    arrValues.push(bHeader ? new Header(oDnbDplDBs.map121.primaryName.desc, null, 'DUNS') : oDnbDplDBs.map121.primaryName.path);
 
     // Address
     arrValues = arrValues.concat( oDnbDplDBs.addrToArray(
@@ -74,44 +74,44 @@ function anaCreditLayout(oDnbDplDBs, bHeader) {
             oDnbDplDBs.const.addr.component.regionAbbr,
             oDnbDplDBs.const.addr.component.countryISO
         ],
-        bHeader
+        bHeader && new Header(null, null, 'DUNS')
     ));
 
     // D&B legal form code
-    arrValues.push(bHeader ? new Header(oDnbDplDBs.map121.legalFormCode4.desc) : oDnbDplDBs.map121.legalFormCode4.path);
+    arrValues.push(bHeader ? new Header(oDnbDplDBs.map121.legalFormCode4.desc, null, 'DUNS') : oDnbDplDBs.map121.legalFormCode4.path);
 
     // ECB legal form
     const ecbLegalForm = oDnbDplDBs.getEcbLegalForm();
 
-    arrValues.push(bHeader ? new Header('ECB legal form') : ecbLegalForm?.ecbLegalFormCode);
+    arrValues.push(bHeader ? new Header('ECB legal form', null, 'DUNS') : ecbLegalForm?.ecbCode);
 
     // Institutional sector placeholder
-    arrValues.push(bHeader ? new Header('Inst sector') : 'institutional sector');
+    arrValues.push(bHeader ? new Header('Inst sector', null, 'DUNS') : 'institutional sector');
 
     // Activity code NACE
     arrValues = arrValues.concat( oDnbDplDBs.indCodesToArray(
         oDnbDplDBs.const.indCodes.type.naceRev2,
         [ oDnbDplDBs.const.indCodes.component.code ],
         1,
-        bHeader
+        bHeader && new Header(null, null, 'DUNS', `(${oDnbDplDBs.const.indCodes.type.naceRev2.descShort})`)
     ));
 
     // Operating status
-    arrValues.push(bHeader ? new Header(oDnbDplDBs.map121.opStatus.desc) : oDnbDplDBs.map121.opStatus.path);
-    arrValues.push(bHeader ? new Header(oDnbDplDBs.map121.opStatusDate.desc) : oDnbDplDBs.map121.opStatusDate.path);
-    arrValues.push(bHeader ? new Header(oDnbDplDBs.map121.opSubStatus.desc) : oDnbDplDBs.map121.opSubStatus.path);
+    arrValues.push(bHeader ? new Header(oDnbDplDBs.map121.opStatus.desc, null, 'DUNS') : oDnbDplDBs.map121.opStatus.path);
+    arrValues.push(bHeader ? new Header(oDnbDplDBs.map121.opStatusDate.desc, null, 'DUNS') : oDnbDplDBs.map121.opStatusDate.path);
+    arrValues.push(bHeader ? new Header(oDnbDplDBs.map121.opSubStatus.desc, null, 'DUNS') : oDnbDplDBs.map121.opSubStatus.path);
 
     // Legal events
-    arrValues.push(bHeader ? new Header('has bankruptcy') : oDnbDplDBs?.org?.legalEvents?.hasBankruptcy);
-    arrValues.push(bHeader ? new Header('has bankruptcy date') : oDnbDplDBs?.org?.legalEvents?.bankruptcy?.mostRecentFilingDate);
-    arrValues.push(bHeader ? new Header('has open bankruptcy') : oDnbDplDBs?.org?.legalEvents?.hasOpenBankruptcy);
-    arrValues.push(bHeader ? new Header('has insolvency') : oDnbDplDBs?.org?.legalEvents?.hasInsolvency);
-    arrValues.push(bHeader ? new Header('has insolvency date') : oDnbDplDBs?.org?.legalEvents?.insolvency?.mostRecentFilingDate);
-    arrValues.push(bHeader ? new Header('has liquidation') : oDnbDplDBs?.org?.legalEvents?.hasLiquidation);
-    arrValues.push(bHeader ? new Header('has liquidation') : oDnbDplDBs?.org?.legalEvents?.hasSuspensionOfPayments);
+    arrValues.push(bHeader ? new Header('has bankruptcy', null, 'DUNS') : oDnbDplDBs?.org?.legalEvents?.hasBankruptcy);
+    arrValues.push(bHeader ? new Header('has bankruptcy date', null, 'DUNS') : oDnbDplDBs?.org?.legalEvents?.bankruptcy?.mostRecentFilingDate);
+    arrValues.push(bHeader ? new Header('has open bankruptcy', null, 'DUNS') : oDnbDplDBs?.org?.legalEvents?.hasOpenBankruptcy);
+    arrValues.push(bHeader ? new Header('has insolvency', null, 'DUNS') : oDnbDplDBs?.org?.legalEvents?.hasInsolvency);
+    arrValues.push(bHeader ? new Header('has insolvency date', null, 'DUNS') : oDnbDplDBs?.org?.legalEvents?.insolvency?.mostRecentFilingDate);
+    arrValues.push(bHeader ? new Header('has liquidation', null, 'DUNS') : oDnbDplDBs?.org?.legalEvents?.hasLiquidation);
+    arrValues.push(bHeader ? new Header('has liquidation', null, 'DUNS') : oDnbDplDBs?.org?.legalEvents?.hasSuspensionOfPayments);
 
     // SMB indicator
-    arrValues.push(bHeader ? new Header(oDnbDplDBs.map121.SMB.desc) : oDnbDplDBs.map121.SMB.path);
+    arrValues.push(bHeader ? new Header(oDnbDplDBs.map121.SMB.desc, null, 'DUNS') : oDnbDplDBs.map121.SMB.path);
 
     // Number of employees (scope individual/hq)
     arrValues = arrValues.concat( oDnbDplDBs.numEmplsToArray(
@@ -125,7 +125,7 @@ function anaCreditLayout(oDnbDplDBs, bHeader) {
             oDnbDplDBs.const.numEmpl.scopeCodes.hq.code
         ],
         2,
-        bHeader
+        bHeader && new Header(null, null, 'DUNS')
     ));
 
     // Number of employees (scope consolidated)
@@ -139,39 +139,45 @@ function anaCreditLayout(oDnbDplDBs, bHeader) {
             oDnbDplDBs.const.numEmpl.scopeCodes.consolidated.code
         ],
         1,
-        bHeader
+        bHeader && new Header(null, 3, 'DUNS')
     ));
 
     // Financial figures
-    arrValues = arrValues.concat( oDnbDplDBs.latestFinsToArray( bHeader ) );
+    arrValues = arrValues.concat( oDnbDplDBs.latestFinsToArray( bHeader && new Header(null, null, 'DUNS') ) );
 
     // Linkage DUNS
     const corpLinkLevels = oDnbDplDBs.corpLinkageLevels();
-/*
-    arrValues.push(bHeader ? new Header('hq or immediate parent duns') : corpLinkLevels[oDnbDplDBs.const.corpLinkage.oneLevelUp]?.duns);
-    arrValues.push(bHeader ? new Header('hq') : corpLinkLevels[oDnbDplDBs.const.corpLinkage.oneLevelUp]?.hq);
-    arrValues.push(bHeader ? new Header('hq or immediate parent name') : corpLinkLevels[oDnbDplDBs.const.corpLinkage.oneLevelUp]?.primaryName);
-    arrValues.push(bHeader ? new Header('global ultimate parent duns') : corpLinkLevels[oDnbDplDBs.const.corpLinkage.gblUlt]?.duns);
-    arrValues.push(bHeader ? new Header('global ultimate parent name') : corpLinkLevels[oDnbDplDBs.const.corpLinkage.gblUlt]?.primaryName);
-*/
-    arrValues = arrValues.concat(
-        oDnbDplDBs.corpLinkageLevelToArray(
-            corpLinkLevels[oDnbDplDBs.const.corpLinkage.level.gblUlt],
-            [
-                oDnbDplDBs.const.corpLinkage.component.duns,
-                oDnbDplDBs.const.corpLinkage.component.name,
-            ],
-            [ /*
-                oDnbDplDBs.const.corpLinkage.component.line1,
-                oDnbDplDBs.const.corpLinkage.component.line2,
-                oDnbDplDBs.const.corpLinkage.component.postalcode,
-                oDnbDplDBs.const.corpLinkage.component.locality,
-                oDnbDplDBs.const.corpLinkage.component.regionAbbr,
-                oDnbDplDBs.const.corpLinkage.component.countryISO */
-            ],
-            bHeader
-    ));
 
+    // Is one level up the HQ or the parent
+    arrValues.push(bHeader ? new Header('HQ or parent') : oDnbDplDBs.org?.corporateLinkage?.oneLevelUp);
+
+    // Corporate linkage levels to list
+    const linkLevels = [
+        oDnbDplDBs.const.corpLinkage.level.oneLevelUp.idx,
+        oDnbDplDBs.const.corpLinkage.level.gblUlt.idx
+    ];
+
+    // List the attributes for the specified linkage level
+    linkLevels.forEach(linkLevel => {
+        arrValues = arrValues.concat(
+            oDnbDplDBs.corpLinkageLevelToArray(
+                corpLinkLevels[linkLevel],
+                [
+                    oDnbDplDBs.const.corpLinkage.component.duns,
+                    oDnbDplDBs.const.corpLinkage.component.name
+                ],
+                [
+                    oDnbDplDBs.const.addr.component.line1,
+                    oDnbDplDBs.const.addr.component.line2,
+                    oDnbDplDBs.const.addr.component.postalcode,
+                    oDnbDplDBs.const.addr.component.locality,
+                    oDnbDplDBs.const.addr.component.regionAbbr,
+                    oDnbDplDBs.const.addr.component.countryISO
+                ],
+                bHeader && new Header(null, null, corpLinkLevels[linkLevel].desc)
+        ));
+    })
+    
     return arrValues;
 }
 

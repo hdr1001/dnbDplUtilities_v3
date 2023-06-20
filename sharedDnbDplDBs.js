@@ -21,7 +21,7 @@
 // *********************************************************************
 
 import { objEmpty } from './sharedLib.js';
-import { regNumTypeIsVAT, ecbNatIDs, ecbNatIDsDnbCodes, ecbLegalForms, ecbLegalFormsDnbCodes } from './sharedRefTables.js';
+import { regNumTypeIsVAT, mapDnbCodes2EcbNatIDs, mapDnb2EcbLegalFormCodes } from './sharedRefTables.js';
 
 class Header {
     constructor(text, idx, pre, post) {
@@ -31,17 +31,26 @@ class Header {
         this.post = post;
     }
 
+    setTextIdx(text, idx) {
+        if(text) { this.text = text }
+        if(Number.isInteger(idx)) { this.idx = idx }
+
+        return this;
+    }
+
     toString() {
         let ret = this.text;
 
-        if(this.pre) { ret += this.pre + ' '}
-        if(this.post) { ret += ' ' + this.post}
+        if(this.pre) { ret = this.pre  + ' ' + ret }
+        if(this.post) { ret += ' ' + this.post }
 
-        if(this.idx || this.idx === 0) { ret += ' ' + this.idx}
+        if(this.idx || this.idx === 0) { ret += ' ' + this.idx }
 
         return ret;
     }
 }
+
+const constructHeader = (header, text, idx) => header instanceof Header ? header.setTextIdx(text, idx).toString() : new Header(text, idx);
 
 // Object to enable prototypal inheritance for D&B Direct+ Data Blocks
 // Usage:
@@ -105,15 +114,15 @@ const dnbDplDBs = {
             },
             component: {
                 value: {attr: 'value', desc: 'number of employees'},
-                scope: {attr: 'informationScopeDescription', desc: 'information scope'},
-                reliability: {attr: 'reliabilityDescription', desc: 'reliability'}
+                scope: {attr: 'informationScopeDescription', desc: 'information scope (num empl)'},
+                reliability: {attr: 'reliabilityDescription', desc: 'reliability (num empl)'}
             }
         },
         corpLinkage: {
             level: {
-                oneLevelUp: 0,
-                domUlt: 1,
-                gblUlt: 2
+                oneLevelUp: {idx: 0, desc: 'parent'},
+                domUlt: {idx: 1, desc: 'dom ult'},
+                gblUlt: {idx: 2, desc: 'global ult'}
             },
             component: {
                 duns: {idx: 0, desc: 'duns'},
@@ -256,11 +265,13 @@ const dnbDplDBs = {
             if(objEmpty(addr)) { return retArr }
         }
 
+        const component = this.const.addr.component;
+
         arrAddrComponents.forEach((addrComponent, idx) => {
             switch(addrComponent.idx) {
-                case this.const.addr.component.line1.idx:
+                case component.line1.idx:
                     if(header) {
-                        retArr[idx] = new Header(this.const.addr.component.line1.desc)
+                        retArr[idx] = constructHeader(header, component.line1.desc)
                     }
                     else {
                         retArr[idx] = addr?.streetAddress?.line1;
@@ -283,45 +294,45 @@ const dnbDplDBs = {
 
                     break;
                 
-                case this.const.addr.component.line2.idx:
+                case component.line2.idx:
                     retArr[idx] = header
-                        ? new Header(this.const.addr.component.line2.desc)
+                        ?  constructHeader(header, component.line2.desc)
                         : addr?.streetAddress?.line2;
                     break;
                 
-                case this.const.addr.component.locality.idx:
+                case component.locality.idx:
                     retArr[idx] = header 
-                        ? new Header(this.const.addr.component.locality.desc)
+                        ? constructHeader(header, component.locality.desc)
                         : addr?.addressLocality?.name;
                     break;
                 
-                case this.const.addr.component.postalcode.idx:
+                case component.postalcode.idx:
                     retArr[idx] = header
-                        ? new Header(this.const.addr.component.postalcode.desc)
+                        ? constructHeader(header, component.postalcode.desc)
                         : addr?.postalCode;
                     break;
                 
-                case this.const.addr.component.regionAbbr.idx:
+                case component.regionAbbr.idx:
                     retArr[idx] = header
-                        ? new Header(this.const.addr.component.regionAbbr.desc)
+                        ? constructHeader(header, component.regionAbbr.desc)
                         : addr?.addressRegion?.abbreviatedName;
                     break;
                 
-                case this.const.addr.component.regionName.idx:
+                case component.regionName.idx:
                     retArr[idx] = header
-                        ? new Header(this.const.addr.component.regionName.desc)
+                        ? constructHeader(header, component.regionName.desc)
                         : addr?.addressRegion?.name;
                     break;
                 
-                case this.const.addr.component.countryISO.idx:
+                case component.countryISO.idx:
                     retArr[idx] = header
-                        ? new Header(this.const.addr.component.countryISO.desc)
+                        ? constructHeader(header, component.countryISO.desc)
                         : addr?.addressCountry?.isoAlpha2Code;
                     break;
                 
-                case this.const.addr.component.countryName.idx:
+                case component.countryName.idx:
                     retArr[idx] = header
-                        ? new Header(this.const.addr.component.countryName.desc)
+                        ? constructHeader(header, component.countryName.desc)
                         : addr?.addressCountry?.name;
                     break;                
             }
@@ -340,21 +351,13 @@ const dnbDplDBs = {
         //If ECB components requested add the required references
         if(bEcb) {
             this.org.registrationNumbers.forEach(regNum => {
-                const arrEcbNatIDsDnbCodes = ecbNatIDsDnbCodes.filter(ecbNatIDsDnbCode => ecbNatIDsDnbCode.dnbCode === regNum.typeDnBCode);
-
-                if(arrEcbNatIDsDnbCodes.length) {
-                    const arrEcbNatIDs = ecbNatIDs.filter(ecbNatID => ecbNatID.type === arrEcbNatIDsDnbCodes[0].ecbType);
-    
-                    if(arrEcbNatIDs.length) {
-                        regNum.ecbNatID = arrEcbNatIDs[0]
-                    }
+                regNum.ecbNatID = mapDnbCodes2EcbNatIDs.get(regNum.typeDnBCode);
+                /*
+                if(!regNum.ecbNatID) {
+                    console.error(`Please map registration number type ${regNum.typeDnBCode} -> ${JSON.stringify(regNum)}`)
                 }
-/*
-                else {
-                    console.error(`Please map registration number type ${regNum.typeDnBCode}`)
-                }
-*/   
-            })
+                */
+            });
         }
 
         //Create an empty return array
@@ -364,7 +367,7 @@ const dnbDplDBs = {
         if(header) {
             for(let i = 0; i < numRegNums; i++) {
                 regNumComponents.forEach((regNumComponent, idx) => {
-                    retArr[i * regNumComponents.length + idx] = new Header(regNumComponent.desc, numRegNums > 1 ? i + 1 : null) 
+                    retArr[i * regNumComponents.length + idx] = constructHeader(header, regNumComponent.desc, numRegNums > 1 ? i + 1 : null)
                 })
             }
 
@@ -382,7 +385,7 @@ const dnbDplDBs = {
                 .filter(regNum => regNum.ecbNatID)
                 .sort((regNum1, regNum2) => regNum1.ecbNatID.rank - regNum2.ecbNatID.rank)
                 .slice(0, numRegNums);
-                
+/*
             ecbNatIDs.forEach(regNum => {
                 if(new RegExp(regNum.ecbNatID.regExp).test(regNum.registrationNumber)) {
                     //console.log(`➡️  registration number ${regNum.registrationNumber} tests ✅`)
@@ -391,7 +394,7 @@ const dnbDplDBs = {
                     console.log(`➡️  registration number ${regNum.registrationNumber} tests ❌`)
                 }
             });
-            
+*/            
             for(iRegNum = 0; iRegNum < ecbNatIDs.length; iRegNum++) {
                 regNumComponents.forEach((regNumComponent, idx) => {
                     retArr[iRegNum * regNumComponents.length + idx] =
@@ -433,7 +436,7 @@ const dnbDplDBs = {
         if(header) {
             for(let i = 0; i < numIndCodes; i++) {
                 arrIndCodeComponents.forEach((component, idx) => {
-                    retArr[i * arrIndCodeComponents.length + idx] = new Header(component.desc, numIndCodes > 1 ? i + 1 : null, '', '(' + indTypeCode.descShort + ')')
+                    retArr[i * arrIndCodeComponents.length + idx] = constructHeader(header, component.desc, numIndCodes > 1 ? i + 1 : null)
                 })
             }
 
@@ -464,9 +467,24 @@ const dnbDplDBs = {
         let retArr = new Array(numNumEmpl * arrNumEmplComponents.length);
 
         if(header) {
+            let hdrIdx = null;
+
+            if(header instanceof Header && Number.isInteger(header.idx)) {
+                hdrIdx = header.idx;
+            }
+
             for(let i = 0; i < numNumEmpl; i++) {
+                if(numNumEmpl > 1) {
+                    if(Number.isInteger(hdrIdx)) {
+                        hdrIdx += i    
+                    }
+                    else {
+                        hdrIdx = i + 1
+                    }
+                }
+
                 arrNumEmplComponents.forEach((component, idx) => {
-                    retArr[i * arrNumEmplComponents.length + idx] = new Header(component.desc, numNumEmpl > 1 ? i + 1 : null)
+                    retArr[i * arrNumEmplComponents.length + idx] = constructHeader(header, component.desc, hdrIdx)
                 })
             }
 
@@ -554,14 +572,14 @@ const dnbDplDBs = {
         let retArr = new Array(stmt_to_date + 1);
 
         if(header) {
-            retArr[sales_rev] = new Header('sales rev');
-            retArr[total_assets] = new Header('total assets');
-            retArr[currency] = new Header('currency');
-            retArr[units] = new Header('units');
-            retArr[reliability] = new Header('reliability');
-            retArr[info_scope] = new Header('info scope');
-            retArr[stmt_from_date] = new Header('stmt from date');
-            retArr[stmt_to_date] = new Header('stmt to date');
+            retArr[sales_rev] = constructHeader(header, 'sales rev');
+            retArr[total_assets] = constructHeader(header, 'total assets');
+            retArr[currency] = constructHeader(header, 'currency');
+            retArr[units] = constructHeader(header, 'units');
+            retArr[reliability] = constructHeader(header, 'reliability (financials)');
+            retArr[info_scope] = constructHeader(header, 'info scope (financials)');
+            retArr[stmt_from_date] = constructHeader(header, 'stmt from date');
+            retArr[stmt_to_date] = constructHeader(header, 'stmt to date');
 
             return retArr;
         }
@@ -702,24 +720,30 @@ const dnbDplDBs = {
 
         //Fill out position oneLevelUp in the array
         if(!objEmpty(corpLinkage?.headQuarter)) {
-            corpLinkage.oneLevelUp = 'headQuarter';
+            corpLinkage.oneLevelUp = 'HQ';
+            corpLinkage.headQuarter.desc = 'immed parent';
 
-            ret[this.const.corpLinkage.level.oneLevelUp] = corpLinkage.headQuarter;
+            ret[this.const.corpLinkage.level.oneLevelUp.idx] = corpLinkage.headQuarter;
         }
         else if(!objEmpty(corpLinkage?.parent)) {
-            corpLinkage.oneLevelUp = 'parent';
+            corpLinkage.oneLevelUp = 'Parent';
+            corpLinkage.parent.desc = 'immed parent';
 
-            ret[this.const.corpLinkage.level.oneLevelUp] = corpLinkage.parent;
+            ret[this.const.corpLinkage.level.oneLevelUp.idx] = corpLinkage.parent;
         }
 
         //Fill out position domUlt in the array
         if(!objEmpty(corpLinkage?.domesticUltimate)) {
-            ret[this.const.corpLinkage.level.domUlt] = corpLinkage.domesticUltimate;
+            corpLinkage.domesticUltimate.desc = 'dom ult';
+
+            ret[this.const.corpLinkage.level.domUlt.idx] = corpLinkage.domesticUltimate;
         }
         
         //Fill out position gblUlt in the array
         if(!objEmpty(corpLinkage?.globalUltimate)) {
-            ret[this.const.corpLinkage.level.gblUlt] = corpLinkage.globalUltimate;
+            corpLinkage.globalUltimate.desc = 'global ult';
+
+            ret[this.const.corpLinkage.level.gblUlt.idx] = corpLinkage.globalUltimate;
         }
 
         return ret;
@@ -727,55 +751,57 @@ const dnbDplDBs = {
 
     // Convert one corporate linkage level to an array
     corpLinkageLevelToArray: function(linkageLevel, arrLinkageLevelComponents, arrLinkageLevelAddrComponents, header) {
-        let retArr = new Array(arrLinkageLevelComponents.length);
-
-        if(!header) {
-            if(objEmpty(linkageLevel)) { return retArr }
+        if(!header && objEmpty(linkageLevel)) {
+            return new Array(arrLinkageLevelComponents.length + arrLinkageLevelAddrComponents.length)
         }
+
+        const retArrLinkLevel = new Array(arrLinkageLevelComponents.length);
+
+        const component = this.const.corpLinkage.component;
 
         arrLinkageLevelComponents.forEach((linkageLevelComponent, idx) => {
             switch(linkageLevelComponent.idx) {
-                case this.const.corpLinkage.component.duns.idx:
-                    retArr[idx] = header
-                        ? new Header(this.const.corpLinkage.component.duns.desc)
-                        : linkageLevel?.duns;
+                case component.duns.idx:
+                    retArrLinkLevel[idx] = header
+                        ? constructHeader(header, component.duns.desc)
+                        : linkageLevel?.duns
                     break;
-                case this.const.corpLinkage.component.name.idx:
-                    retArr[idx] = header
-                        ? new Header(this.const.corpLinkage.component.name.desc)
+                case component.name.idx:
+                    retArrLinkLevel[idx] = header 
+                        ? constructHeader(header, component.name.desc)
                         : linkageLevel?.primaryName;
                     break;
             }
         });
 
-        if(Array.isArray(arrLinkageLevelAddrComponents)) {
-        }
-
-        return retArr;
+        return retArrLinkLevel.concat(
+            this.addrToArray(
+                linkageLevel[this.const.addr.type.primary.attr],
+                arrLinkageLevelAddrComponents,
+                header
+            )
+        ); 
     },
 
     // This function will convert D&B Direct+ legal form codes (ref table 4) to corresponding ECB codes
     getEcbLegalForm: function() {
         const dnbCode = this.org?.registeredDetails?.legalForm?.dnbCode;
 
+        let ret = null;
+
         if(dnbCode) {
-            const arrEcbLegalFormsDnbCodes = ecbLegalFormsDnbCodes.filter(ecbLegalFormsDnbCode => ecbLegalFormsDnbCode.dnbCode === dnbCode);
-
-            if(arrEcbLegalFormsDnbCodes.length) {
-                const arrEcbLegalForms = ecbLegalForms.filter(ecbLegalForm => ecbLegalForm.ecbLegalFormCode === arrEcbLegalFormsDnbCodes[0].ecbLegalFormCode);
-
-                if(arrEcbLegalForms) { return arrEcbLegalForms[0] }
-            }
+            ret = mapDnb2EcbLegalFormCodes.get(dnbCode);
         }
 /*
         if(dnbCode === undefined) {
             console.error(`No legal form code available for ${this.org.duns} ${this.org.primaryName} (${this.org.countryISOAlpha2Code})`)
         }
-        else {
+
+        if(ret === undefined) {
             console.error(`Legal form code ${dnbCode} not mapped`)
         }
 */
-        return null;
+        return ret;
     }
 };
 
