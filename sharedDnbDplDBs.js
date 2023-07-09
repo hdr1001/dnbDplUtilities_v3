@@ -21,7 +21,14 @@
 // *********************************************************************
 
 import { objEmpty } from './sharedLib.js';
-import { regNumTypeIsVAT, mapDnbCodes2EcbNatIDs, mapDnb2EcbLegalFormCodes } from './sharedRefTables.js';
+import { 
+    regNumTypeIsVAT,
+    mapDnbDeCourts2Ecb,
+    mapDnbCodes2EcbNatIDs,
+    mapDnb2EcbLegalFormCodes4,
+    mapDnb2EcbLegalFormCodes750,
+    ecbCountryCodesEU
+} from './sharedRefTables.js';
 
 class Header {
     constructor(text, idx, pre, post) {
@@ -87,9 +94,10 @@ const dnbDplDBs = {
             component: { //Name components out of array ecbNatIDs "ecb..." and add ecb: true
                 num: {attr: 'registrationNumber', desc: 'registration number'},
                 type: {attr: 'typeDescription', desc: 'registration number type'},
+                numEcbFormat: {attr: 'regNumEcbFormat', desc: 'registration number'},
                 ecbType: {attr: 'type', desc: 'ECB registration number type', ecb: true},
-                ecbName: {attr: 'isoCountry', desc: 'ECB ISO country code', ecb: true},
-                ecbCountry: {attr: 'name', desc: 'ECB registration number name', ecb: true}
+                ecbName: {attr: 'name', desc: 'ECB registration number name', ecb: true},
+                ecbCountry: {attr: 'isoCountry', desc: 'ECB ISO country code', ecb: true}
             }
         },
         indCodes: {
@@ -345,21 +353,6 @@ const dnbDplDBs = {
     // to an array of a certain length
     // Supported registration number components, see regNum.component
     regNumsToArray: function(regNumComponents, numRegNums, header) {
-        //Are any components from the ecbNatIDs requested?
-        const bEcb = !!regNumComponents.filter(component => component.ecb).length;
-
-        //If ECB components requested add the required references
-        if(bEcb) {
-            this.org.registrationNumbers.forEach(regNum => {
-                regNum.ecbNatID = mapDnbCodes2EcbNatIDs.get(regNum.typeDnBCode);
-                /*
-                if(!regNum.ecbNatID) {
-                    console.error(`Please map registration number type ${regNum.typeDnBCode} -> ${JSON.stringify(regNum)}`)
-                }
-                */
-            });
-        }
-
         //Create an empty return array
         let retArr = new Array(numRegNums * regNumComponents.length);
 
@@ -377,6 +370,145 @@ const dnbDplDBs = {
         //No content available
         if(!this.org.registrationNumbers || !this.org.registrationNumbers.length) { return retArr }
 
+        //Are any components from the ecbNatIDs requested?
+        const bEcb = !!regNumComponents.filter(component => component.ecb).length;
+
+        //If ECB components requested add the required references
+        if(bEcb) {
+            this.org.registrationNumbers.forEach(regNum => {
+                regNum.ecbNatID = mapDnbCodes2EcbNatIDs.get(regNum.typeDnBCode);
+
+                if(!regNum.ecbNatID) {
+                    //console.error(`Please map registration number type ${regNum.typeDnBCode} -> ${JSON.stringify(regNum)}`)
+                }
+            })
+        }
+
+        //Add property regNumEcbFormat to the registration numbers
+        this.org.registrationNumbers.forEach(regNum => {
+            Object.defineProperty(
+                regNum,
+                'regNumEcbFormat',
+                {
+                    get() {
+                        const sRegNum = this.registrationNumber;
+
+                        let ret = null, pos, numPt;
+                
+                        switch(this.typeDnBCode) {
+                            case 1335:
+                                if(sRegNum.length === 9) {
+                                    ret = sRegNum.slice(0, 3) + ' ' + sRegNum.slice(3, 6) + ' ' + sRegNum.slice(6)
+                                }
+                
+                                break;
+
+                            case 1358:
+                                if(/[a-zA-Z]/.test(sRegNum.charAt(0))) {
+                                    ret = sRegNum.charAt(0);
+                                }
+                                else {
+                                    ret = '';
+                                }
+
+                                numPt = sRegNum.slice(sRegNum.search(/\d+/));
+
+                                ret += '000000000'.slice(0, 7 - numPt.length) + numPt;
+
+                                break;
+
+                            case 1359:
+                                if(sRegNum.length === 10) {
+                                    ret = sRegNum.slice(0, 2) + '-' + sRegNum.slice(2, 4) + '-' + sRegNum.slice(4)
+                                }
+
+                                break;
+
+                            case 1372:
+                                ret = sRegNum.slice(0, sRegNum.length - 1) + '-' + sRegNum.charAt(sRegNum.length - 1);
+                
+                                break;
+
+                            case 1374:
+                                if(sRegNum.length === 12) {
+                                    ret = sRegNum.slice(0, 3) + '-' + sRegNum.slice(3, 9) + '-' + sRegNum.slice(9)
+                                }
+                
+                                break;
+                
+                            case 1435:
+                                ret = 'PL' + sRegNum;
+                
+                                break;
+
+                            case 2022:
+                                numPt = sRegNum.slice(2);
+
+                                if(numPt && /^\d+$/.test(numPt) && numPt.length < 7) {
+                                    ret = sRegNum.slice(0, 2) + '000000000'.slice(0, 7 - numPt.length) + numPt
+                                }
+
+                                break;
+
+                            case 6862:
+                                let postalCode, xjustiz, deLegalForm;
+
+                                pos = sRegNum.search(/[a-zA-Z]/);
+
+                                if(pos > -1) {
+                                    postalCode = sRegNum.slice(0, pos);
+
+                                    deLegalForm = sRegNum.charAt(pos);
+
+                                    xjustiz = mapDnbDeCourts2Ecb.get(postalCode);
+
+                                    if(xjustiz) {
+                                        if(deLegalForm.toLowerCase() === 'a' || deLegalForm.toLowerCase() === 'b') {
+                                            ret = 'HR' + deLegalForm.toUpperCase() + sRegNum.slice(pos + 1) + '-' + xjustiz
+                                        }
+                                        else {
+                                            //console.log(`❌ legal form letter ${deLegalForm}`)
+                                        }
+                                    }
+                                    else {
+                                        //console.log(`❌ Unable to find xjustiz for postal code ${postalCode}`)
+                                    }
+                                }
+
+                                break;
+                            
+                            case 13145:
+                                if(sRegNum.length === 13) {
+                                    ret = sRegNum.slice(0, 2) + '-' + sRegNum.slice(2, 5) + '-' + sRegNum.slice(5, 12) + '-' + sRegNum.slice(12)
+                                }
+                            
+                                break;
+                
+                            case 17891:
+                                if(sRegNum.length === 11) {
+                                    ret = sRegNum.slice(0, 2) + ' ' + sRegNum.slice(2, 5) + ' ' + sRegNum.slice(5, 8) + ' ' + sRegNum.slice(8)
+                                }
+                
+                                break;
+
+                            case 33905:
+                                if(/^\d+$/.test(sRegNum) && sRegNum.length < 9) {
+                                    ret = '000000000'.slice(0, 9 - sRegNum.length) + sRegNum
+                                }
+
+                                break;
+                
+                            default: //Do nothing
+                        }
+                        
+                        return ret ? ret : this.registrationNumber;
+                    },
+                    enumerable: true,
+                    configurable: true
+                }
+            )
+        })
+
         let iRegNum = 0, regNums;
 
         //If ECB components requested, give preference to mapped registration numbers
@@ -385,16 +517,22 @@ const dnbDplDBs = {
                 .filter(regNum => regNum.ecbNatID)
                 .sort((regNum1, regNum2) => regNum1.ecbNatID.rank - regNum2.ecbNatID.rank)
                 .slice(0, numRegNums);
-/*
+
+            //Test the registration number against the ECB specified format
             ecbNatIDs.forEach(regNum => {
-                if(new RegExp(regNum.ecbNatID.regExp).test(regNum.registrationNumber)) {
-                    //console.log(`➡️  registration number ${regNum.registrationNumber} tests ✅`)
+                if(regNum.ecbNatID.objRegExp) {
+                    if(regNum.ecbNatID.objRegExp.test(regNum.regNumEcbFormat)) {
+                        //console.error(`➡️  registration number ${regNum.regNumEcbFormat} tests ✅`)
+                    }
+                    else {
+                        console.error(`➡️  registration number ${regNum.registrationNumber}, type ${regNum.typeDnBCode} tests ❌`)
+                    }
                 }
                 else {
-                    console.log(`➡️  registration number ${regNum.registrationNumber} tests ❌`)
+                    //console.log(`No ECB regular expression available for testing D&B typ code ${regNum.typeDnBCode}`)
                 }
             });
-*/            
+
             for(iRegNum = 0; iRegNum < ecbNatIDs.length; iRegNum++) {
                 regNumComponents.forEach((regNumComponent, idx) => {
                     retArr[iRegNum * regNumComponents.length + idx] =
@@ -783,25 +921,22 @@ const dnbDplDBs = {
         ); 
     },
 
-    // This function will convert D&B Direct+ legal form codes (ref table 4) to corresponding ECB codes
+    // This function will convert D&B Direct+ legal form codes (ref table 4/750) to corresponding ECB codes
     getEcbLegalForm: function() {
-        const dnbCode = this.org?.registeredDetails?.legalForm?.dnbCode;
-
-        let ret = null;
-
-        if(dnbCode) {
-            ret = mapDnb2EcbLegalFormCodes.get(dnbCode);
+        if(ecbCountryCodesEU.has(this.org.countryISOAlpha2Code)) {
+            const ecbLegalForm = mapDnb2EcbLegalFormCodes4.get(this.org?.registeredDetails?.legalForm?.dnbCode);
+    
+            if(ecbLegalForm) {
+                return ecbLegalForm.ecbCode
+            }
+            else {
+                //console.error(`➡️ Legal form code ${this.org?.registeredDetails?.legalForm?.dnbCode} not mapped ❌`)
+                return null
+            }
         }
-/*
-        if(dnbCode === undefined) {
-            console.error(`No legal form code available for ${this.org.duns} ${this.org.primaryName} (${this.org.countryISOAlpha2Code})`)
+        else { //RW value
+            return mapDnb2EcbLegalFormCodes750.get(this.org?.legalForm?.dnbCode)
         }
-
-        if(ret === undefined) {
-            console.error(`Legal form code ${dnbCode} not mapped`)
-        }
-*/
-        return ret;
     }
 };
 

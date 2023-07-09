@@ -48,20 +48,20 @@ function anaCreditLayout(oDnbDplDBs, bHeader) {
     arrValues.push(bHeader ? new Header(oDnbDplDBs.map121.duns.desc) : oDnbDplDBs.map121.duns.path);
 
     // LEI placeholder
-    arrValues.push(bHeader ? new Header('LEI', null, 'DUNS') : 'LEI placeholder');
+    arrValues.push(bHeader ? new Header('LEI') : 'LEI placeholder');
 
     // List the entities external registration numbers & associated types
     arrValues = arrValues.concat( oDnbDplDBs.regNumsToArray(
         [
-            oDnbDplDBs.const.regNum.component.num,
+            oDnbDplDBs.const.regNum.component.numEcbFormat,
             oDnbDplDBs.const.regNum.component.ecbType
         ],
         2,
-        bHeader && new Header(null, null, 'DUNS')
+        bHeader && new Header(null)
     ));
 
     // Primary name
-    arrValues.push(bHeader ? new Header(oDnbDplDBs.map121.primaryName.desc, null, 'DUNS') : oDnbDplDBs.map121.primaryName.path);
+    arrValues.push(bHeader ? new Header(oDnbDplDBs.map121.primaryName.desc) : oDnbDplDBs.map121.primaryName.path);
 
     // Address
     arrValues = arrValues.concat( oDnbDplDBs.addrToArray(
@@ -74,44 +74,42 @@ function anaCreditLayout(oDnbDplDBs, bHeader) {
             oDnbDplDBs.const.addr.component.regionAbbr,
             oDnbDplDBs.const.addr.component.countryISO
         ],
-        bHeader && new Header(null, null, 'DUNS')
+        bHeader && new Header(null)
     ));
 
     // D&B legal form code
-    arrValues.push(bHeader ? new Header(oDnbDplDBs.map121.legalFormCode4.desc, null, 'DUNS') : oDnbDplDBs.map121.legalFormCode4.path);
+    arrValues.push(bHeader ? new Header(oDnbDplDBs.map121.legalFormCode4.desc) : oDnbDplDBs.map121.legalFormCode4.path);
 
     // ECB legal form
-    const ecbLegalForm = oDnbDplDBs.getEcbLegalForm();
-
-    arrValues.push(bHeader ? new Header('ECB legal form', null, 'DUNS') : ecbLegalForm?.ecbCode);
+    arrValues.push(bHeader ? new Header('ECB legal form') : oDnbDplDBs.getEcbLegalForm());
 
     // Institutional sector placeholder
-    arrValues.push(bHeader ? new Header('Inst sector', null, 'DUNS') : 'institutional sector');
+    arrValues.push(bHeader ? new Header('Inst sector') : 'institutional sector');
 
     // Activity code NACE
     arrValues = arrValues.concat( oDnbDplDBs.indCodesToArray(
         oDnbDplDBs.const.indCodes.type.naceRev2,
         [ oDnbDplDBs.const.indCodes.component.code ],
         1,
-        bHeader && new Header(null, null, 'DUNS', `(${oDnbDplDBs.const.indCodes.type.naceRev2.descShort})`)
+        bHeader && new Header(null, `(${oDnbDplDBs.const.indCodes.type.naceRev2.descShort})`)
     ));
 
     // Operating status
-    arrValues.push(bHeader ? new Header(oDnbDplDBs.map121.opStatus.desc, null, 'DUNS') : oDnbDplDBs.map121.opStatus.path);
-    arrValues.push(bHeader ? new Header(oDnbDplDBs.map121.opStatusDate.desc, null, 'DUNS') : oDnbDplDBs.map121.opStatusDate.path);
-    arrValues.push(bHeader ? new Header(oDnbDplDBs.map121.opSubStatus.desc, null, 'DUNS') : oDnbDplDBs.map121.opSubStatus.path);
+    arrValues.push(bHeader ? new Header(oDnbDplDBs.map121.opStatus.desc) : oDnbDplDBs.map121.opStatus.path);
+    arrValues.push(bHeader ? new Header(oDnbDplDBs.map121.opStatusDate.desc) : oDnbDplDBs.map121.opStatusDate.path);
+    arrValues.push(bHeader ? new Header(oDnbDplDBs.map121.opSubStatus.desc) : oDnbDplDBs.map121.opSubStatus.path);
 
     // Legal events
-    arrValues.push(bHeader ? new Header('has bankruptcy', null, 'DUNS') : oDnbDplDBs?.org?.legalEvents?.hasBankruptcy);
-    arrValues.push(bHeader ? new Header('has bankruptcy date', null, 'DUNS') : oDnbDplDBs?.org?.legalEvents?.bankruptcy?.mostRecentFilingDate);
-    arrValues.push(bHeader ? new Header('has open bankruptcy', null, 'DUNS') : oDnbDplDBs?.org?.legalEvents?.hasOpenBankruptcy);
-    arrValues.push(bHeader ? new Header('has insolvency', null, 'DUNS') : oDnbDplDBs?.org?.legalEvents?.hasInsolvency);
-    arrValues.push(bHeader ? new Header('has insolvency date', null, 'DUNS') : oDnbDplDBs?.org?.legalEvents?.insolvency?.mostRecentFilingDate);
-    arrValues.push(bHeader ? new Header('has liquidation', null, 'DUNS') : oDnbDplDBs?.org?.legalEvents?.hasLiquidation);
-    arrValues.push(bHeader ? new Header('has liquidation', null, 'DUNS') : oDnbDplDBs?.org?.legalEvents?.hasSuspensionOfPayments);
+    arrValues.push(bHeader ? new Header('has bankruptcy') : oDnbDplDBs?.org?.legalEvents?.hasBankruptcy);
+    arrValues.push(bHeader ? new Header('has bankruptcy date') : oDnbDplDBs?.org?.legalEvents?.bankruptcy?.mostRecentFilingDate);
+    arrValues.push(bHeader ? new Header('has open bankruptcy') : oDnbDplDBs?.org?.legalEvents?.hasOpenBankruptcy);
+    arrValues.push(bHeader ? new Header('has insolvency') : oDnbDplDBs?.org?.legalEvents?.hasInsolvency);
+    arrValues.push(bHeader ? new Header('has insolvency date') : oDnbDplDBs?.org?.legalEvents?.insolvency?.mostRecentFilingDate);
+    arrValues.push(bHeader ? new Header('has liquidation') : oDnbDplDBs?.org?.legalEvents?.hasLiquidation);
+    arrValues.push(bHeader ? new Header('has susp of paym') : oDnbDplDBs?.org?.legalEvents?.hasSuspensionOfPayments);
 
     // SMB indicator
-    arrValues.push(bHeader ? new Header(oDnbDplDBs.map121.SMB.desc, null, 'DUNS') : oDnbDplDBs.map121.SMB.path);
+    arrValues.push(bHeader ? new Header(oDnbDplDBs.map121.SMB.desc) : oDnbDplDBs.map121.SMB.path);
 
     // Number of employees (scope individual/hq)
     arrValues = arrValues.concat( oDnbDplDBs.numEmplsToArray(
@@ -125,7 +123,7 @@ function anaCreditLayout(oDnbDplDBs, bHeader) {
             oDnbDplDBs.const.numEmpl.scopeCodes.hq.code
         ],
         2,
-        bHeader && new Header(null, null, 'DUNS')
+        bHeader && new Header(null)
     ));
 
     // Number of employees (scope consolidated)
@@ -139,11 +137,11 @@ function anaCreditLayout(oDnbDplDBs, bHeader) {
             oDnbDplDBs.const.numEmpl.scopeCodes.consolidated.code
         ],
         1,
-        bHeader && new Header(null, 3, 'DUNS')
+        bHeader && new Header(null, 3, null)
     ));
 
     // Financial figures
-    arrValues = arrValues.concat( oDnbDplDBs.latestFinsToArray( bHeader && new Header(null, null, 'DUNS') ) );
+    arrValues = arrValues.concat( oDnbDplDBs.latestFinsToArray( bHeader && new Header(null) ) );
 
     // Linkage DUNS
     const corpLinkLevels = oDnbDplDBs.corpLinkageLevels();
@@ -213,7 +211,7 @@ fs.readdir(path.format(filePath))
                                     console.log(anaCreditLayout(oDnbDplDBs, listHeader).map(nullUndefToEmptyStr).join('|'));
                                     listHeader = false;
                                 }
-
+                                
                                 console.log(anaCreditLayout(oDnbDplDBs).map(nullUndefToEmptyStr).join('|'));
                             })
                             .catch(err => console.error(err.message))

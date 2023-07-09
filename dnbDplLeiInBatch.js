@@ -26,10 +26,13 @@ import { promises as fs } from 'fs';
 
 //Rate limit the number of requests to the Gleif API
 import { RateLimiter } from 'limiter';
-const gleifLimiter = new RateLimiter({ tokensPerInterval: 3, interval: 'second' });
+const gleifLimiter = new RateLimiter({ tokensPerInterval: 2, interval: 'second' });
 
 //Pool of database connections
 let pgPool;
+
+const setDuns = new Set([
+]);
 
 //Generic Gleif Lei HTTP request attributes
 const gleifLeiHttpHeaders = {
@@ -50,7 +53,7 @@ const leiQryStr = {
 
 const nullUndefToEmptyStr = elem => elem === null || elem === undefined ? '' : elem;
 
-function getPrimaryRegNum(regNums, ctry) {
+function getPrimaryRegNum(regNums, ctry, round) {
     let regNum = '';
 
     const primaryRegNums = regNums.filter(oRegNum => oRegNum.isPreferredRegistrationNumber);
@@ -74,19 +77,21 @@ function getPrimaryRegNum(regNums, ctry) {
 
         case 'be':
             const enterpriseRegnum = regNums.filter(oRegNum => oRegNum.typeDnBCode === 800);
-
-            //if(enterpriseRegnum.length) { regNum = enterpriseRegnum[0].registrationNumber }
-            
+         
             if(enterpriseRegnum.length && enterpriseRegnum[0].registrationNumber.length === 10) {
                 regNum = enterpriseRegnum[0].registrationNumber.slice(0, 4);
                 regNum += '.' + enterpriseRegnum[0].registrationNumber.slice(4, 7);
                 regNum += '.' + enterpriseRegnum[0].registrationNumber.slice(-3);
             }
-            
+
+            if(round === 2) {
+                if(enterpriseRegnum.length) { regNum = enterpriseRegnum[0].registrationNumber }
+            }
+
             break;
 
         case 'ch':
-            //regNum = regNum.replace(/[^a-z0-9]/gi, '');
+            if(round === 2) { regNum = regNum.replace(/[^a-z0-9]/gi, '') }
 
             break;
 
@@ -140,7 +145,11 @@ function getPrimaryRegNum(regNums, ctry) {
                 regNum += ' ' + noEnterpriseRegNum[0].registrationNumber.slice(3, 6);
                 regNum += ' ' + noEnterpriseRegNum[0].registrationNumber.slice(-3);
             }
-            
+
+            if(round === 2) {
+                if(noEnterpriseRegNum.length) { regNum = noEnterpriseRegNum }
+            }
+
             break;
         
         case 'pl':
@@ -178,7 +187,8 @@ function getPrimaryRegNum(regNums, ctry) {
 function getLei(reqParams) {
     const regNumLeiQryStr = {
         ...leiQryStr,
-        'filter[entity.registeredAs]': reqParams.primRegNum,
+        //'filter[entity.registeredAs]': reqParams.primRegNum,
+        'filter[entity.legalName]': reqParams.primName,
         'filter[entity.legalAddress.country]': reqParams.isoCtry.toLowerCase()
     };
 
@@ -194,8 +204,13 @@ function writeToConsole(reqParams, respLei) {
     console.log([
         reqParams.duns,
         reqParams.primName,
+        reqParams.addr1,
+        reqParams.addr2,
+        reqParams.city,
+        reqParams.postalCode,
         reqParams.isoCtry,
-        reqParams.primRegNum
+        reqParams.primRegNum,
+        reqParams.legalForm
     ].concat(
         respLei.err ?
             [
@@ -205,7 +220,15 @@ function writeToConsole(reqParams, respLei) {
             [
                 respLei.lei,
                 respLei.name,
-                respLei.ctry,
+                respLei.addr1,
+                respLei.addr2,
+                respLei.city,
+                respLei.region,
+                respLei.country,
+                respLei.postalCode,
+                respLei.registeredAs,
+                respLei.category,
+                respLei.legalForm
             ]
     ).map(nullUndefToEmptyStr).join('|'));
 }
@@ -221,7 +244,15 @@ function processLeiReturn(leiRet, reqParams) {
 
             respLei.lei = data0.id;
             respLei.name = data0?.attributes?.entity?.legalName?.name;
-            respLei.ctry = data0?.attributes?.entity?.legalAddress?.country;
+            respLei.addr1 = data0?.attributes?.entity?.legalAddress?.addressLines?.[0];
+            respLei.addr2 = data0?.attributes?.entity?.legalAddress?.addressLines?.[1];
+            respLei.city = data0?.attributes?.entity?.legalAddress?.city;
+            respLei.region = data0?.attributes?.entity?.legalAddress?.region;
+            respLei.country = data0?.attributes?.entity?.legalAddress?.country;
+            respLei.postalCode = data0?.attributes?.entity?.legalAddress?.postalCode;
+            respLei.registeredAs = data0?.attributes?.entity?.registeredAs;
+            respLei.category = data0?.attributes?.entity?.category;
+            respLei.legalForm = data0?.attributes?.entity?.legalForm?.id;
         }
         else {
             respLei.err  = 'No LEI returned for submitted registration number'
@@ -257,7 +288,7 @@ if(pgConn.database && 1 === 0) { //Remove "&& 1 === 0" to process duns from data
                             duns: row.duns,
                             primName: row.primname,
                             isoCtry: row.isoctry,
-                            primRegNum: getPrimaryRegNum(row.regnums, row.isoctry)
+                            primRegNum: getPrimaryRegNum(row.regnums, row.isoctry, 1)
                         };
 
                         if(reqParams.primRegNum) {
@@ -306,21 +337,28 @@ else {
 
                                     const org = dbs.organization;
 
-                                    const reqParams = {
+                                    let reqParams = {
                                         duns: org.duns,
                                         primName: org.primaryName,
                                         isoCtry: org.countryISOAlpha2Code,
-                                        primRegNum: getPrimaryRegNum(org?.registrationNumbers, org.countryISOAlpha2Code)
+                                        addr1: org?.primaryAddress?.streetAddress?.line1,
+                                        addr2: org?.primaryAddress?.streetAddress?.line2,
+                                        city: org?.primaryAddress?.addressLocality?.name,
+                                        postalCode: org?.primaryAddress?.postalCode,
+                                        primRegNum: getPrimaryRegNum(org?.registrationNumbers, org.countryISOAlpha2Code),
+                                        legalForm: org?.registeredDetails?.legalForm?.dnbCode
                                     }
 
-                                    if(reqParams.primRegNum) {
+                                    if(!setDuns.has(reqParams.duns)) { return }
+
+//                                    if(reqParams.primRegNum) {
                                         getLei(reqParams)
                                             .then(ret => processLeiReturn(ret, reqParams))
                                             .catch(err => console.error(err));
-                                    }
+/*                                    }
                                     else {
                                         writeToConsole(reqParams, { err: 'No valid registration number available on D&B data' });
-                                    }
+                                    } */
                                 })
                                 .catch(err => console.error(err.message))
                         })

@@ -22,7 +22,600 @@
 
 // Some registration numbers are VAT#s
 // Gentle reminder -> ... is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND ...
-const regNumTypeIsVAT = new Set([99, 480, 481, 522, 552, 1351, 1361, 1366, 1423, 1429, 1432, 1435, 1438, 1440, 1699, 1861, 2080, 2432, 2472, 2530, 2550, 6273, 6865, 6867, 9125, 15169, 30080, 30081, 33317, 33318, 33323, 36137, 37716, 42066, 42067, 42083]);
+const regNumTypeIsVAT = new Set([
+    99,    //BE
+    480,   //LU
+    481,   //IT
+    522,   //DK
+    552,   //FI
+    1351,  //CZ
+    1361,  //HU
+    1366,  //Non EU, IL
+    1423,  //AT
+    1425,  //BG
+    1428,  //EE
+    1429,  //GR
+    1431,  //LV
+    1432,  //LI
+    1433,  //LT
+    1435,  //PL
+    1438,  //SK
+    1440,  //Non EU, CH
+    1699,  //Non EU, NO
+    1861,  //SE
+    2080,  //FR
+    2432,  //PT
+    2472,  //ES
+    2530,  //IE
+    2550,  //Non EU, GB
+    6273,  //NL
+    6865,
+    6867,  //DE
+    9125,
+    9336,  //MT
+    15169, //Non EU, ZA
+    17283, //CY
+    30080,
+    30081,
+    33317,
+    33318,
+    33323,
+    36137, //HU
+    37716, //SI
+    42066, //Non EU, NO
+    42067, //SE
+    42083  //RO
+]);
+
+const ecbDeCourts = [
+    { xjustiz: "R3101", court: "Aachen"},
+    { xjustiz: "Y1201", court: "Altenburg"},
+    { xjustiz: "D3101", court: "Amberg"},
+    { xjustiz: "D3201", court: "Ansbach"},
+    { xjustiz: "Y1101", court: "Apolda"},
+    { xjustiz: "R1901", court: "Arnsberg"},
+    { xjustiz: "Y1102", court: "Arnstadt"},
+    { xjustiz: "Y1303", court: "Arnstadt Zweigstelle Ilmenau"},
+    { xjustiz: "D4102", court: "Aschaffenburg"},
+    { xjustiz: "D2102", court: "Augsburg"},
+    { xjustiz: "P3101", court: "Aurich"},
+    { xjustiz: "M1305", court: "Bad Hersfeld"},
+    { xjustiz: "M1202", court: "Bad Homburg v.d.H."},
+    { xjustiz: "T2101", court: "Bad Kreuznach"},
+    { xjustiz: "R2108", court: "Bad Oeynhausen"},
+    { xjustiz: "Y1301", court: "Bad Salzungen"},
+    { xjustiz: "D4201", court: "Bamberg"},
+    { xjustiz: "D4301", court: "Bayreuth"},
+    { xjustiz: "F1103", court: "Berlin (Charlottenburg)"},
+    { xjustiz: "R2101", court: "Bielefeld"},
+    { xjustiz: "R2201", court: "Bochum"},
+    { xjustiz: "R3201", court: "Bonn"},
+    { xjustiz: "P1103", court: "Braunschweig"},
+    { xjustiz: "H1101", court: "Bremen"},
+    { xjustiz: "U1206", court: "Chemnitz"},
+    { xjustiz: "D4401", court: "Coburg"},
+    { xjustiz: "R2707", court: "Coesfeld"},
+    { xjustiz: "G1103", court: "Cottbus"},
+    { xjustiz: "M1103", court: "Darmstadt"},
+    { xjustiz: "D2201", court: "Deggendorf"},
+    { xjustiz: "R2402", court: "Dortmund"},
+    { xjustiz: "U1104", court: "Dresden"},
+    { xjustiz: "R1202", court: "Duisburg"},
+    { xjustiz: "R3103", court: "Düren"},
+    { xjustiz: "R1101", court: "Düsseldorf"},
+    { xjustiz: "Y1105", court: "Eisenach"},
+    { xjustiz: "Y1106", court: "Erfurt"},
+    { xjustiz: "M1602", court: "Eschwege"},
+    { xjustiz: "R2503", court: "Essen"},
+    { xjustiz: "X1112", court: "Flensburg"},
+    { xjustiz: "M1201", court: "Frankfurt am Main"},
+    { xjustiz: "G1207", court: "Frankfurt/Oder"},
+    { xjustiz: "B8536 ", court: "Freiburg"},
+    { xjustiz: "M1405", court: "Friedberg"},
+    { xjustiz: "M1603", court: "Fritzlar"},
+    { xjustiz: "M1301", court: "Fulda"},
+    { xjustiz: "D3304", court: "Fürth"},
+    { xjustiz: "R2507", court: "Gelsenkirchen"},
+    { xjustiz: "Y1203", court: "Gera"},
+    { xjustiz: "M1406", court: "Gießen"},
+    { xjustiz: "Y1108", court: "Gotha"},
+    { xjustiz: "P2204", court: "Göttingen"},
+    { xjustiz: "N1202", court: "Greifswald"},
+    { xjustiz: "Y1205", court: "Greiz"},
+    { xjustiz: "N1303", court: "Güstrow"},
+    { xjustiz: "R2103", court: "Gütersloh"},
+    { xjustiz: "R2602", court: "Hagen"},
+    { xjustiz: "K1101", court: "Hamburg"},
+    { xjustiz: "R2404", court: "Hamm"},
+    { xjustiz: "M1502", court: "Hanau"},
+    { xjustiz: "P2305", court: "Hannover"},
+    { xjustiz: "Y1109", court: "Heilbad Heiligenstadt"},
+    { xjustiz: "Y1302", court: "Hildburghausen"},
+    { xjustiz: "P2408", court: "Hildesheim"},
+    { xjustiz: "D4501", court: "Hof"},
+    { xjustiz: "V1102", court: "Homburg"},
+    { xjustiz: "D5701", court: "Ingolstadt"},
+    { xjustiz: "R2604", court: "Iserlohn"},
+    { xjustiz: "Y1206", court: "Jena"},
+    { xjustiz: "T3201", court: "Kaiserslautern"},
+    { xjustiz: "M1607", court: "Kassel"},
+    { xjustiz: "D2304", court: "Kempten (Allgäu)"},
+    { xjustiz: "X1517", court: "Kiel"},
+    { xjustiz: "R1304", court: "Kleve"},
+    { xjustiz: "T2210", court: "Koblenz"},
+    { xjustiz: "R3306", court: "Köln"},
+    { xjustiz: "M1203", court: "Königstein"},
+    { xjustiz: "M1608", court: "Korbach"},
+    { xjustiz: "R1402", court: "Krefeld"},
+    { xjustiz: "T3304", court: "Landau"},
+    { xjustiz: "D2404", court: "Landshut"},
+    { xjustiz: "V1103", court: "Lebach"},
+    { xjustiz: "U1308", court: "Leipzig"},
+    { xjustiz: "R2307", court: "Lemgo"},
+    { xjustiz: "M1706", court: "Limburg"},
+    { xjustiz: "X1721", court: "Lübeck"},
+    { xjustiz: "T3104", court: "Ludwigshafen a.Rhein (Ludwigshafen)"},
+    { xjustiz: "N1305", court: "Ludwigslust"},
+    { xjustiz: "P2507", court: "Lüneburg"},
+    { xjustiz: "T2304", court: "Mainz"},
+    { xjustiz: "B8535", court: "Mannheim"},
+    { xjustiz: "M1809", court: "Marburg"},
+    { xjustiz: "Y1304", court: "Meiningen"},
+    { xjustiz: "D2505", court: "Memmingen"},
+    { xjustiz: "V1104", court: "Merzig"},
+    { xjustiz: "R1504", court: "Mönchengladbach"},
+    { xjustiz: "T2214", court: "Montabaur"},
+    { xjustiz: "Y1110", court: "Mühlhausen"},
+    { xjustiz: "D2601", court: "München"},
+    { xjustiz: "R2713", court: "Münster"},
+    { xjustiz: "N1105", court: "Neubrandenburg"},
+    { xjustiz: "V1105", court: "Neunkirchen"},
+    { xjustiz: "G1309", court: "Neuruppin"},
+    { xjustiz: "R1102", court: "Neuss"},
+    { xjustiz: "Y1111", court: "Nordhausen"},
+    { xjustiz: "D3310", court: "Nürnberg"},
+    { xjustiz: "M1114", court: "Offenbach am Main"},
+    { xjustiz: "P3210", court: "Oldenburg (Oldenburg)"},
+    { xjustiz: "P3313", court: "Osnabrück"},
+    { xjustiz: "V1107", court: "Ottweiler"},
+    { xjustiz: "R2809", court: "Paderborn"},
+    { xjustiz: "N1107", court: "Pasewalk"},
+    { xjustiz: "D2803", court: "Passau"},
+    { xjustiz: "X1321", court: "Pinneberg"},
+    { xjustiz: "Y1209", court: "Pößneck"},
+    { xjustiz: "Y1208", court: "Pößneck Zweigstelle Bad Lobenstein"},
+    { xjustiz: "G1312", court: "Potsdam"},
+    { xjustiz: "R2204", court: "Recklinghausen"},
+    { xjustiz: "D3410", court: "Regensburg"},
+    { xjustiz: "N1205", court: "Ribnitz-Damgarten"},
+    { xjustiz: "N1206", court: "Rostock"},
+    { xjustiz: "Y1210", court: "Rudolstadt"},
+    { xjustiz: "Y1211", court: "Rudolstadt Zweigstelle Saalfeld"},
+    { xjustiz: "V1109", court: "Saarbrücken"},
+    { xjustiz: "V1110", court: "Saarlouis"},
+    { xjustiz: "D4608", court: "Schweinfurt"},
+    { xjustiz: "N1308", court: "Schwerin"},
+    { xjustiz: "R3208", court: "Siegburg"},
+    { xjustiz: "R2909", court: "Siegen"},
+    { xjustiz: "Y1112", court: "Sömmerda"},
+    { xjustiz: "Y1113", court: "Sondershausen"},
+    { xjustiz: "Y1307", court: "Sonneberg"},
+    { xjustiz: "V1111", court: "St. Ingbert (St Ingbert)"},
+    { xjustiz: "V1112", court: "St. Wendel (St Wendel)"},
+    { xjustiz: "P2106", court: "Stadthagen"},
+    { xjustiz: "Y1214", court: "Stadtroda"},
+    { xjustiz: "R2706", court: "Steinfurt"},
+    { xjustiz: "W1215", court: "Stendal"},
+    { xjustiz: "N1209", court: "Stralsund"},
+    { xjustiz: "D3413", court: "Straubing"},
+    { xjustiz: "B8534", court: "Stuttgart"},
+    { xjustiz: "Y1308", court: "Suhl"},
+    { xjustiz: "P2613", court: "Tostedt"},
+    { xjustiz: "D2910", court: "Traunstein"},
+    { xjustiz: "B8537", court: "Ulm"},
+    { xjustiz: "V1115", court: "Völklingen"},
+    { xjustiz: "P2716", court: "Walsrode"},
+    { xjustiz: "N1112", court: "Waren (Müritz)"},
+    { xjustiz: "D3508", court: "Weiden i. d. OPf."},
+    { xjustiz: "Y1114", court: "Weimar"},
+    { xjustiz: "M1710", court: "Wetzlar"},
+    { xjustiz: "M1906", court: "Wiesbaden"},
+    { xjustiz: "N1210", court: "Wismar"},
+    { xjustiz: "T2408", court: "Wittlich"},
+    { xjustiz: "R1608", court: "Wuppertal"},
+    { xjustiz: "D4708", court: "Würzburg"},
+    { xjustiz: "T3403", court: "Zweibrücken"}    
+];
+
+const dnbDeCourts = [
+    { town: "Aachen", postalCode: "52070", state: "NRW", suffix: null },
+    { town: "Ahlen", postalCode: "59227", state: "NRW", suffix: null },
+    { town: "Altenburg", postalCode: "04600", state: "THÜ", suffix: null },
+    { town: "Amberg", postalCode: "92224", state: "BY", suffix: null },
+    { town: "Ansbach", postalCode: "91522", state: "BY", suffix: null },
+    { town: "Apolda", postalCode: "99510", state: "THÜ", suffix: null },
+    { town: "Arnsberg", postalCode: "59821", state: "NRW", suffix: null },
+    { town: "Arnstadt", postalCode: "99310", state: "THÜ", suffix: null },
+    { town: "Arnstadt Zweigstelle Ilmenau ", postalCode: "98693", state: "THÜ", suffix: null },
+    { town: "Aschaffenburg", postalCode: "63739", state: "BY", suffix: null },
+    { town: "Augsburg", postalCode: "86150", state: "BY", suffix: null },
+    { town: "Aurich", postalCode: "26603", state: "NS", suffix: null },
+    { town: "Bad Hersfeld", postalCode: "36251", state: "HE", suffix: null },
+    { town: "Bad Homburg", postalCode: "61352", state: "HE", suffix: null },
+    { town: "Bad Kreuznach", postalCode: "55543", state: "RLP", suffix: null },
+    { town: "Bad Oeynhausen", postalCode: "32545", state: "NRW", suffix: null },
+    { town: "Bad Salzungen", postalCode: "36433", state: "THÜ", suffix: null },
+    { town: "Bamberg", postalCode: "96047", state: "BY", suffix: null },
+    { town: "Bayreuth", postalCode: "95444", state: "BY", suffix: null },
+    { town: "Berlin", postalCode: "10623", state: "BE", suffix: "B" },
+    { town: "Bielefeld", postalCode: "33602", state: "NRW", suffix: null },
+    { town: "Bochum", postalCode: "44787", state: "NRW", suffix: null },
+    { town: "Bonn", postalCode: "53111", state: "NRW", suffix: null },
+    { town: "Braunschweig", postalCode: "38100", state: "NS", suffix: null },
+    { town: "Bremen", postalCode: "28195", state: "BR", suffix: "HB" },
+    { town: "Bremen", postalCode: "28195", state: "BR", suffix: "BHV" },
+    { town: "Bünde", postalCode: "32257", state: "NRW", suffix: null },
+    { town: "Chemnitz", postalCode: "09112", state: "SAC", suffix: null },
+    { town: "Coburg", postalCode: "96450", state: "BY", suffix: null },
+    { town: "Coesfeld", postalCode: "48653", state: "NRW", suffix: null },
+    { town: "Cottbus", postalCode: "03046", state: "BB", suffix: "CB" },
+    { town: "Darmstadt", postalCode: "64283", state: "HE", suffix: null },
+    { town: "Deggendorf", postalCode: "94469", state: "BY", suffix: null },
+    { town: "Dortmund", postalCode: "44135", state: "NRW", suffix: null },
+    { town: "Dresden", postalCode: "01067", state: "SAC", suffix: null },
+    { town: "Duisburg", postalCode: "47051", state: "NRW", suffix: null },
+    { town: "Düren", postalCode: "52349", state: "NRW", suffix: null },
+    { town: "Düsseldorf", postalCode: "40227", state: "NRW", suffix: null },
+    { town: "Eisenach", postalCode: "99817", state: "THÜ", suffix: null },
+    { town: "Erfurt", postalCode: "99084", state: "THÜ", suffix: null },
+    { town: "Erkelenz", postalCode: "41812", state: "NRW", suffix: null },
+    { town: "Eschwege", postalCode: "37269", state: "HE", suffix: null },
+    { town: "Essen", postalCode: "45130", state: "NRW", suffix: null },
+    { town: "Flensburg", postalCode: "24937", state: "SHS", suffix: "FL" },
+    { town: "Flensburg", postalCode: "24937", state: "SHS", suffix: "HU" },
+    { town: "Flensburg", postalCode: "24937", state: "SHS", suffix: "KA" },
+    { town: "Flensburg", postalCode: "24937", state: "SHS", suffix: "NI" },
+    { town: "Flensburg", postalCode: "24937", state: "SHS", suffix: "SL" },
+    { town: "Frankfurt/Main", postalCode: "60313", state: "HE", suffix: null },
+    { town: "Frankfurt/Oder", postalCode: "15236", state: "BB", suffix: "FF" },
+    { town: "Freiburg", postalCode: "79098", state: "BW", suffix: null },
+    { town: "Friedberg", postalCode: "61169", state: "HE", suffix: null },
+    { town: "Fritzlar", postalCode: "34560", state: "HE", suffix: null },
+    { town: "Fulda", postalCode: "36037", state: "HE", suffix: null },
+    { town: "Fürth", postalCode: "90762", state: "BY", suffix: null },
+    { town: "Geldern", postalCode: "47608", state: "NRW", suffix: null },
+    { town: "Gelsenkirchen", postalCode: "45879", state: "NRW", suffix: null },
+    { town: "Gera", postalCode: "07545", state: "THÜ", suffix: null },
+    { town: "Gießen", postalCode: "35390", state: "HE", suffix: null },
+    { town: "Gotha", postalCode: "99867", state: "THÜ", suffix: null },
+    { town: "Göttingen", postalCode: "37073", state: "NS", suffix: null },
+    { town: "Greiz", postalCode: "07973", state: "THÜ", suffix: null },
+    { town: "Gütersloh", postalCode: "33330", state: "NRW", suffix: null },
+    { town: "Hagen", postalCode: "58097", state: "NRW", suffix: null },
+    { town: "Hamburg", postalCode: "20355", state: "HH", suffix: null },
+    { town: "Hamm", postalCode: "59065", state: "NRW", suffix: null },
+    { town: "Hanau", postalCode: "63450", state: "HE", suffix: null },
+    { town: "Hannover", postalCode: "30175", state: "NS", suffix: null },
+    { town: "Heilbad Heiligenstadt", postalCode: "37308", state: "THÜ", suffix: null },
+    { town: "Herford", postalCode: "32052", state: "NRW", suffix: null },
+    { town: "Herne", postalCode: "44623", state: "NRW", suffix: null },
+    { town: "Hildburghausen", postalCode: "98646", state: "THÜ", suffix: null },
+    { town: "Hildesheim", postalCode: "31134", state: "NS", suffix: null },
+    { town: "Hof", postalCode: "95030", state: "BY", suffix: null },
+    { town: "Homburg", postalCode: "66424", state: "SAL", suffix: null },
+    { town: "Ingolstadt", postalCode: "85049", state: "BY", suffix: null },
+    { town: "Iserlohn", postalCode: "58636", state: "NRW", suffix: null },
+    { town: "Jena", postalCode: "07745", state: "THÜ", suffix: null },
+    { town: "Kaiserslautern", postalCode: "67655", state: "RLP", suffix: null },
+    { town: "Kassel", postalCode: "34117", state: "HE", suffix: null },
+    { town: "Kempten", postalCode: "87435", state: "BY", suffix: null },
+    { town: "Kiel", postalCode: "24114", state: "SHS", suffix: "BB" },
+    { town: "Kiel", postalCode: "24114", state: "SHS", suffix: "EC" },
+    { town: "Kiel", postalCode: "24114", state: "SHS", suffix: "KI" },
+    { town: "Kiel", postalCode: "24114", state: "SHS", suffix: "NM" },
+    { town: "Kiel", postalCode: "24114", state: "SHS", suffix: "NO" },
+    { town: "Kiel", postalCode: "24114", state: "SHS", suffix: "PL" },
+    { town: "Kiel", postalCode: "24114", state: "SHS", suffix: "RD" },
+    { town: "Kiel", postalCode: "24114", state: "SHS", suffix: "SE" },
+    { town: "Kleve", postalCode: "47533", state: "NRW", suffix: null },
+    { town: "Koblenz", postalCode: "56068", state: "RLP", suffix: null },
+    { town: "Köln", postalCode: "50670", state: "NRW", suffix: null },
+    { town: "Königstein", postalCode: "61462", state: "HE", suffix: null },
+    { town: "Korbach", postalCode: "34497", state: "HE", suffix: null },
+    { town: "Krefeld", postalCode: "47798", state: "NRW", suffix: null },
+    { town: "Landau", postalCode: "76829", state: "RLP", suffix: null },
+    { town: "Landshut", postalCode: "84028", state: "BY", suffix: null },
+    { town: "Lebach", postalCode: "66822", state: "SAL", suffix: null },
+    { town: "Leipzig", postalCode: "04275", state: "SAC", suffix: null },
+    { town: "Lemgo", postalCode: "32657", state: "NRW", suffix: null },
+    { town: "Limburg", postalCode: "65549", state: "HE", suffix: null },
+    { town: "Lobenstein", postalCode: "07356", state: "THÜ", suffix: null },
+    { town: "Lübeck", postalCode: "23568", state: "SHS", suffix: "AH" },
+    { town: "Lübeck", postalCode: "23568", state: "SHS", suffix: "BS" },
+    { town: "Lübeck", postalCode: "23568", state: "SHS", suffix: "EU" },
+    { town: "Lübeck", postalCode: "23568", state: "SHS", suffix: "GE" },
+    { town: "Lübeck", postalCode: "23568", state: "SHS", suffix: "HL" },
+    { town: "Lübeck", postalCode: "23568", state: "SHS", suffix: "MÖ" },
+    { town: "Lübeck", postalCode: "23568", state: "SHS", suffix: "OD" },
+    { town: "Lübeck", postalCode: "23568", state: "SHS", suffix: "OL" },
+    { town: "Lübeck", postalCode: "23568", state: "SHS", suffix: "RE" },
+    { town: "Lübeck", postalCode: "23568", state: "SHS", suffix: "RZ" },
+    { town: "Lübeck", postalCode: "23568", state: "SHS", suffix: "SB" },
+    { town: "Ludwigshafen", postalCode: "67061", state: "RLP", suffix: null },
+    { town: "Lüneburg", postalCode: "21335", state: "NS", suffix: null },
+    { town: "Lünen", postalCode: "44532", state: "NRW", suffix: null },
+    { town: "Mainz", postalCode: "55116", state: "RLP", suffix: null },
+    { town: "Mannheim", postalCode: "68159", state: "BW", suffix: null },
+    { town: "Marburg", postalCode: "35037", state: "HE", suffix: null },
+    { town: "Meiningen", postalCode: "98617", state: "THÜ", suffix: null },
+    { town: "Memmingen", postalCode: "87700", state: "BY", suffix: null },
+    { town: "Merzig", postalCode: "66663", state: "SAL", suffix: null },
+    { town: "Merzig Zweigstelle Wadern", postalCode: "66687", state: "SAL", suffix: null },
+    { town: "Mönchengladbach", postalCode: "41061", state: "NRW", suffix: null },
+    { town: "Montabaur", postalCode: "56410", state: "RLP", suffix: null },
+    { town: "Mühlhausen", postalCode: "99974", state: "THÜ", suffix: null },
+    { town: "München", postalCode: "80333", state: "BY", suffix: null },
+    { town: "Münster", postalCode: "48149", state: "NRW", suffix: null },
+    { town: "Neubrandenburg", postalCode: "17033", state: "MV", suffix: null },
+    { town: "Neunkirchen", postalCode: "66538", state: "SAL", suffix: null },
+    { town: "Neuruppin", postalCode: "16816", state: "BB", suffix: "NP" },
+    { town: "Neuss", postalCode: "41460", state: "NRW", suffix: null },
+    { town: "Nordhausen", postalCode: "99734", state: "THÜ", suffix: null },
+    { town: "Nürnberg", postalCode: "90402", state: "BY", suffix: null },
+    { town: "Oberhausen", postalCode: "46045", state: "NRW", suffix: null },
+    { town: "Offenbach", postalCode: "63065", state: "HE", suffix: null },
+    { town: "Oldenburg", postalCode: "26135", state: "NS", suffix: null },
+    { town: "Osnabrück", postalCode: "49074", state: "NS", suffix: null },
+    { town: "Ottweiler", postalCode: "66564", state: "SAL", suffix: null },
+    { town: "Paderborn", postalCode: "33098", state: "NRW", suffix: null },
+    { town: "Passau", postalCode: "94032", state: "BY", suffix: null },
+    { town: "Pinneberg", postalCode: "25421", state: "SHS", suffix: "EL" },
+    { town: "Pinneberg", postalCode: "25421", state: "SHS", suffix: "IZ" },
+    { town: "Pinneberg", postalCode: "25421", state: "SHS", suffix: "ME" },
+    { town: "Pinneberg", postalCode: "25421", state: "SHS", suffix: "PI" },
+    { town: "Pößneck", postalCode: "07381", state: "THÜ", suffix: null },
+    { town: "Potsdam", postalCode: "14467", state: "BB", suffix: "P" },
+    { town: "Ratingen", postalCode: "40878", state: "NRW", suffix: null },
+    { town: "Recklinghausen", postalCode: "45657", state: "NRW", suffix: null },
+    { town: "Regensburg", postalCode: "93049", state: "BY", suffix: null },
+    { town: "Remscheid", postalCode: "42853", state: "NRW", suffix: null },
+    { town: "Rostock", postalCode: "18057", state: "MV", suffix: null },
+    { town: "Rudolstadt", postalCode: "07407", state: "THÜ", suffix: null },
+    { town: "Saalfeld", postalCode: "07318", state: "THÜ", suffix: null },
+    { town: "Saarbrücken", postalCode: "66119", state: "SAL", suffix: null },
+    { town: "Saarlouis", postalCode: "66740", state: "SAL", suffix: null },
+    { town: "Sankt Ingbert", postalCode: "66386", state: "SAL", suffix: null },
+    { town: "Sankt Wendel", postalCode: "66606", state: "SAL", suffix: null },
+    { town: "Schleiden", postalCode: "53937", state: "NRW", suffix: null },
+    { town: "Schweinfurt", postalCode: "97421", state: "BY", suffix: null },
+    { town: "Schwerin", postalCode: "19053", state: "MV", suffix: null },
+    { town: "Siegburg", postalCode: "53721", state: "NRW", suffix: null },
+    { town: "Siegen", postalCode: "57072", state: "NRW", suffix: null },
+    { town: "Soest", postalCode: "59494", state: "NRW", suffix: null },
+    { town: "Solingen", postalCode: "42651", state: "NRW", suffix: null },
+    { town: "Sömmerda", postalCode: "99610", state: "THÜ", suffix: null },
+    { town: "Sondershausen", postalCode: "99706", state: "THÜ", suffix: null },
+    { town: "Sonneberg", postalCode: "96515", state: "THÜ", suffix: null },
+    { town: "Stadthagen", postalCode: "31655", state: "NS", suffix: null },
+    { town: "Stadtroda", postalCode: "07646", state: "THÜ", suffix: null },
+    { town: "Steinfurt", postalCode: "48565", state: "NRW", suffix: null },
+    { town: "Stendal", postalCode: "39576", state: "SAA", suffix: null },
+    { town: "Stralsund", postalCode: "18439", state: "MV", suffix: null },
+    { town: "Straubing", postalCode: "94315", state: "BY", suffix: null },
+    { town: "Stuttgart", postalCode: "70190", state: "BW", suffix: null },
+    { town: "Suhl", postalCode: "98527", state: "THÜ", suffix: null },
+    { town: "Tostedt", postalCode: "21255", state: "NS", suffix: null },
+    { town: "Traunstein", postalCode: "83278", state: "BY", suffix: null },
+    { town: "Ulm", postalCode: "89073", state: "BW", suffix: null },
+    { town: "Völklingen", postalCode: "66333", state: "SAL", suffix: null },
+    { town: "Walsrode", postalCode: "29664", state: "NS", suffix: null },
+    { town: "Warburg", postalCode: "34414", state: "NRW", suffix: null },
+    { town: "Warstein", postalCode: "59581", state: "NRW", suffix: null },
+    { town: "Weiden", postalCode: "92637", state: "BY", suffix: null },
+    { town: "Weimar", postalCode: "99423", state: "THÜ", suffix: null },
+    { town: "Wetzlar", postalCode: "35578", state: "HE", suffix: null },
+    { town: "Wiesbaden", postalCode: "65185", state: "HE", suffix: null },
+    { town: "Witten", postalCode: "58452", state: "NRW", suffix: null },
+    { town: "Wittlich", postalCode: "54516", state: "RLP", suffix: null },
+    { town: "Wuppertal", postalCode: "42103", state: "NRW", suffix: null },
+    { town: "Würzburg", postalCode: "97070", state: "BY", suffix: null },
+    { town: "Zweibrücken", postalCode: "66482", state: "RLP", suffix: null }
+];
+
+const mapDnbDeCourts2Ecb = new Map([
+    [ "52070", "R3101" ],
+    [ "59227", null ],
+    [ "04600", "Y1201" ],
+    [ "92224", "D3101" ],
+    [ "91522", "D3201" ],
+    [ "99510", "Y1101" ],
+    [ "59821", "R1901" ],
+    [ "99310", "Y1102" ],
+    [ "98693", null ],
+    [ "63739", "D4102" ],
+    [ "86150", "D2102" ],
+    [ "26603", "P3101" ],
+    [ "36251", "M1305" ],
+    [ "61352", null ],
+    [ "55543", "T2101" ],
+    [ "32545", "R2108" ],
+    [ "36433", "Y1301" ],
+    [ "96047", "D4201" ],
+    [ "95444", "D4301" ],
+    [ "10623", "F1103" ],
+    [ "33602", "R2101" ],
+    [ "44787", "R2201" ],
+    [ "53111", "R3201" ],
+    [ "38100", "P1103" ],
+    [ "28195", "H1101" ],
+    [ "28195", "H1101" ],
+    [ "32257", null ],
+    [ "09112", "U1206" ],
+    [ "96450", "D4401" ],
+    [ "48653", "R2707" ],
+    [ "03046", "G1103" ],
+    [ "64283", "M1103" ],
+    [ "94469", "D2201" ],
+    [ "44135", "R2402" ],
+    [ "01067", "U1104" ],
+    [ "47051", "R1202" ],
+    [ "52349", "R3103" ],
+    [ "40227", "R1101" ],
+    [ "99817", "Y1105" ],
+    [ "99084", "Y1106" ],
+    [ "41812", null ],
+    [ "37269", "M1602" ],
+    [ "45130", "R2503" ],
+    [ "24937", "X1112" ],
+    [ "24937", "X1112" ],
+    [ "24937", "X1112" ],
+    [ "24937", "X1112" ],
+    [ "24937", "X1112" ],
+    [ "60313", "M1201" ],
+    [ "15236", "G1207" ],
+    [ "79098", "B8536 " ],
+    [ "61169", "M1405" ],
+    [ "34560", "M1603" ],
+    [ "36037", "M1301" ],
+    [ "90762", "D3304" ],
+    [ "47608", null ],
+    [ "45879", "R2507" ],
+    [ "07545", "Y1203" ],
+    [ "35390", "M1406" ],
+    [ "99867", "Y1108" ],
+    [ "37073", "P2204" ],
+    [ "07973", "Y1205" ],
+    [ "33330", "R2103" ],
+    [ "58097", "R2602" ],
+    [ "20355", "K1101" ],
+    [ "59065", "R2404" ],
+    [ "63450", "M1502" ],
+    [ "30175", "P2305" ],
+    [ "37308", "Y1109" ],
+    [ "32052", null ],
+    [ "44623", null ],
+    [ "98646", "Y1302" ],
+    [ "31134", "P2408" ],
+    [ "95030", "D4501" ],
+    [ "66424", "V1102" ],
+    [ "85049", "D5701" ],
+    [ "58636", "R2604" ],
+    [ "07745", "Y1206" ],
+    [ "67655", "T3201" ],
+    [ "34117", "M1607" ],
+    [ "87435", "D2304" ],
+    [ "24114", "X1517" ],
+    [ "24114", "X1517" ],
+    [ "24114", "X1517" ],
+    [ "24114", "X1517" ],
+    [ "24114", "X1517" ],
+    [ "24114", "X1517" ],
+    [ "24114", "X1517" ],
+    [ "24114", "X1517" ],
+    [ "47533", "R1304" ],
+    [ "56068", "T2210" ],
+    [ "50670", "R3306" ],
+    [ "61462", "M1203" ],
+    [ "34497", "M1608" ],
+    [ "47798", "R1402" ],
+    [ "76829", "T3304" ],
+    [ "84028", "D2404" ],
+    [ "66822", "V1103" ],
+    [ "04275", "U1308" ],
+    [ "32657", "R2307" ],
+    [ "65549", "M1706" ],
+    [ "07356", null ],
+    [ "23568", "X1721" ],
+    [ "23568", "X1721" ],
+    [ "23568", "X1721" ],
+    [ "23568", "X1721" ],
+    [ "23568", "X1721" ],
+    [ "23568", "X1721" ],
+    [ "23568", "X1721" ],
+    [ "23568", "X1721" ],
+    [ "23568", "X1721" ],
+    [ "23568", "X1721" ],
+    [ "23568", "X1721" ],
+    [ "67061", null ],
+    [ "21335", "P2507" ],
+    [ "44532", null ],
+    [ "55116", "T2304" ],
+    [ "68159", "B8535" ],
+    [ "35037", "M1809" ],
+    [ "98617", "Y1304" ],
+    [ "87700", "D2505" ],
+    [ "66663", "V1104" ],
+    [ "66687", null ],
+    [ "41061", "R1504" ],
+    [ "56410", "T2214" ],
+    [ "99974", "Y1110" ],
+    [ "80333", "D2601" ],
+    [ "48149", "R2713" ],
+    [ "17033", "N1105" ],
+    [ "66538", "V1105" ],
+    [ "16816", "G1309" ],
+    [ "41460", "R1102" ],
+    [ "99734", "Y1111" ],
+    [ "90402", "D3310" ],
+    [ "46045", null ],
+    [ "63065", "M1114" ],
+    [ "26135", null ],
+    [ "49074", "P3313" ],
+    [ "66564", "V1107" ],
+    [ "33098", "R2809" ],
+    [ "94032", "D2803" ],
+    [ "25421", "X1321" ],
+    [ "25421", "X1321" ],
+    [ "25421", "X1321" ],
+    [ "25421", "X1321" ],
+    [ "07381", "Y1209" ],
+    [ "14467", "G1312" ],
+    [ "40878", null ],
+    [ "45657", "R2204" ],
+    [ "93049", "D3410" ],
+    [ "42853", null ],
+    [ "18057", "N1206" ],
+    [ "07407", "Y1210" ],
+    [ "07318", null ],
+    [ "66119", "V1109" ],
+    [ "66740", "V1110" ],
+    [ "66386", null ],
+    [ "66606", null ],
+    [ "53937", null ],
+    [ "97421", "D4608" ],
+    [ "19053", "N1308" ],
+    [ "53721", "R3208" ],
+    [ "57072", "R2909" ],
+    [ "59494", null ],
+    [ "42651", null ],
+    [ "99610", "Y1112" ],
+    [ "99706", "Y1113" ],
+    [ "96515", "Y1307" ],
+    [ "31655", "P2106" ],
+    [ "07646", "Y1214" ],
+    [ "48565", "R2706" ],
+    [ "39576", "W1215" ],
+    [ "18439", "N1209" ],
+    [ "94315", "D3413" ],
+    [ "70190", "B8534" ],
+    [ "98527", "Y1308" ],
+    [ "21255", "P2613" ],
+    [ "83278", "D2910" ],
+    [ "89073", "B8537" ],
+    [ "66333", "V1115" ],
+    [ "29664", "P2716" ],
+    [ "34414", null ],
+    [ "59581", null ],
+    [ "92637", null ],
+    [ "99423", "Y1114" ],
+    [ "35578", "M1710" ],
+    [ "65185", "M1906" ],
+    [ "58452", null ],
+    [ "54516", "T2408" ],
+    [ "42103", "R1608" ],
+    [ "97070", "D4708" ],
+    [ "66482", "T3403" ]
+]);
 
 const ecbNatIDs = [
     { type: "AE_BL_CD", rank: 1, isoCountry: "AE", name: "Business License (BL) Number", shortName: "BL", class: "Business register number", regExp: "\\d{4,5}" }, 
@@ -67,7 +660,7 @@ const ecbNatIDs = [
     { type: "CZ_NID_CD", rank: 2, isoCountry: "CZ", name: "Náhradní identifikační číslo", shortName: "NID/KIC", class: "Investment/Pension fund identifier", regExp: "\\d{10}|\\d{8}" }, 
     { type: "DE_NOTAP_CD", rank: 4, isoCountry: "DE", name: "Kein Registereintrag (Not applicable)", shortName: "", class: "", regExp: "" }, 
     { type: "DE_TAX_CD", rank: 3, isoCountry: "DE", name: "Steuernummer", shortName: "", class: "Tax code", regExp: "\\d{13}" }, 
-    { type: "DE_TRD_RGSTR_CD", rank: 1, isoCountry: "DE", name: "- Genossenschaftsregister,  - Handelsregister Abteilung A, - Handelsregister Abteilung B, - Partnerschaftsregister, - Vereinsregister ", shortName: "GnR, HRA, HRB, PR, VR ", class: "Trade register number", regExp: "((G(n|N)R)|(HRA)|(HRB)|(PR)|(VR))\\d{1,6}[A-Z]{0,5}-[A-Z]\\d{4} " }, 
+    { type: "DE_TRD_RGSTR_CD", rank: 1, isoCountry: "DE", name: "- Genossenschaftsregister,  - Handelsregister Abteilung A, - Handelsregister Abteilung B, - Partnerschaftsregister, - Vereinsregister ", shortName: "GnR, HRA, HRB, PR, VR ", class: "Trade register number", regExp: "((G(n|N)R)|(HRA)|(HRB)|(PR)|(VR))\\d{1,6}[A-Z]{0,5}-[A-Z]\\d{4}" }, 
     { type: "DE_VAT_CD", rank: 2, isoCountry: "DE", name: "Umsatzsteuer-Identifikationsnummer", shortName: "", class: "VAT number", regExp: "DE\\d{9}" }, 
     { type: "DK_CVR_CD", rank: 1, isoCountry: "DK", name: "CVR-nummer", shortName: "", class: "Business register number", regExp: "\\d{8}" }, 
     { type: "DK_FT_CD", rank: 2, isoCountry: "DK", name: "FT-nummer", shortName: "", class: "National Supervisory Authority code", regExp: "\\d+(-\\d+)?" }, 
@@ -188,44 +781,85 @@ const ecbNatIDs = [
 ];
 
 const ecbNatIDsDnbCodes = [
-    { ecbType: 'AT_FB_CD', dnbCode: 1336 },
-    { ecbType: 'GEN_VAT_CD', dnbCode: 1423 },             //AT VAT
-    { ecbType: 'BE_OND_CD', dnbCode: 800 },
-    { ecbType: 'GEN_VAT_CD', dnbCode: 99 },               //BE VAT
+    { ecbType: 'AT_FB_CD', dnbCode: 1336 },                //AT bus reg
+    { ecbType: 'GEN_VAT_CD', dnbCode: 1423 },              //AT VAT
+    { ecbType: 'BA_MBS_CD', dnbCode: 9349 },               //BA bus reg
+    { ecbType: 'BA_JIB_CD', dnbCode: 17282 },              //BA trade reg
+    { ecbType: 'BE_OND_CD', dnbCode: 800 },                //BE bus reg
+    { ecbType: 'GEN_VAT_CD', dnbCode: 99 },                //BE VAT
+    { ecbType: 'BG_UIC_CD', dnbCode: 9428 },               //BG trade reg
+    { ecbType: 'BG_VAT_CD', dnbCode: 1425 },               //BG VAT
+    { ecbType: 'CY_CBCID_CD', dnbCode: 9360 },
+    { ecbType: 'CY_VAT_CD', dnbCode: 17283 },              //CY VAT
     { ecbType: 'CZ_ICO_CD', dnbCode: 1350 },
-    { ecbType: 'GEN_VAT_CD', dnbCode: 1351 },             //CZ VAT
-    { ecbType: 'DE_TRD_RGSTR_CD', dnbCode: 6862 },
-    { ecbType: 'DE_VAT_CD', dnbCode: 6867 },              //DE VAT
+    { ecbType: 'GEN_VAT_CD', dnbCode: 1351 },              //CZ VAT
+    { ecbType: 'DE_TRD_RGSTR_CD', dnbCode: 6862 },         //DE trade reg
+    { ecbType: 'DE_VAT_CD', dnbCode: 6867 },               //DE VAT
     { ecbType: 'DK_CVR_CD', dnbCode: 521 },
-    { ecbType: 'DK_CVR_CD', dnbCode: 521 },
-    { ecbType: 'ES_NIF_CD', dnbCode: 2472 },              //ES VAT
-    { ecbType: 'FR_SIREN_CD', dnbCode: 2078 },
-    { ecbType: 'GEN_VAT_CD', dnbCode: 2080 },             //FR VAT
-    { ecbType: 'GEN_TRD_RGSTR_ENTTY_CD', dnbCode: 2079 }, //FR CoC
-    { ecbType: 'IE_CRO_CD', dnbCode: 9134 },
-    { ecbType: 'GEN_VAT_CD', dnbCode: 481 },              //IT VAT
-    { ecbType: 'IT_CCIAA_CD', dnbCode: 2022 },
+    { ecbType: 'DK_SE_CD', dnbCode: 522 },                 //DK VAT
+    { ecbType: 'EE_RG_CD', dnbCode: 9365 },                //EE bus reg
+    { ecbType: 'GEN_VAT_CD', dnbCode: 1428 },              //EE VAT
+    { ecbType: 'ES_NIF_CD', dnbCode: 2472 },               //ES VAT
+    { ecbType: 'FR_SIREN_CD', dnbCode: 2078 },             //FR bus reg
+    { ecbType: 'GEN_VAT_CD', dnbCode: 2080 },              //FR VAT
+    { ecbType: 'GEN_TRD_RGSTR_ENTTY_CD', dnbCode: 2079 },  //FR CoC
+    { ecbType: 'FI_Y_CD', dnbCode: 553 },                  //FI bus reg
+    { ecbType: 'FI_ALV_CD', dnbCode: 552 },                //FI VAT
+    { ecbType: 'GR_AFM_CD', dnbCode: 14259 },              //GR
+    { ecbType: 'GEN_TRD_RGSTR_ENTTY_CD', dnbCode: 14246 }, //GR CoC
+    { ecbType: 'HR_MB_CD', dnbCode: 1426 },                //HR trade reg
+    { ecbType: 'HR_OIB_CD', dnbCode: 14257 },              //HR tax
+    { ecbType: 'HU_CEG_CD', dnbCode: 1359 },               //HU trade reg (no dashes)
+    { ecbType: 'HU_KOZ_CD', dnbCode: 36137 },              //HU VAT
+    { ecbType: 'HU_TOR_CD', dnbCode: 1361 },               //HU VAT (prefix HU)
+    { ecbType: 'IE_CRO_CD', dnbCode: 9134 },               //IE trade reg
+    { ecbType: 'IE_VAT_CD', dnbCode: 2530 },               //IE VAT
+    { ecbType: 'IT_CCIAA_CD', dnbCode: 2022 },             //IT trade reg
     { ecbType: 'IT_CF_CD', dnbCode: 2023 },
-    { ecbType: 'LU_VAT_CD', dnbCode: 480 },
-    { ecbType: 'LU_RCS_CD', dnbCode: 3827 },
-    { ecbType: 'NL_KVK_CD', dnbCode: 6256 },
-    { ecbType: 'GEN_VAT_CD', dnbCode: 6273 },             //NL VAT
+    { ecbType: 'GEN_VAT_CD', dnbCode: 481 },               //IT VAT
+    { ecbType: 'LT_JAR_CD', dnbCode: 9388 },               //LT bus reg
+    { ecbType: 'GEN_VAT_CD', dnbCode: 1433 },              //LT VAT
+    { ecbType: 'LU_RCS_CD', dnbCode: 3827 },               //LU trade reg
+    { ecbType: 'LU_VAT_CD', dnbCode: 480 },                //LU VAT
+    { ecbType: 'LV_NBR_CD', dnbCode: 9384 },               //LV bus reg
+    { ecbType: 'LV_VAT_CD', dnbCode: 1431 },               //LV VAT
+    { ecbType: 'MC_RCI_CD', dnbCode: 29993 },              //MC trade reg
+    { ecbType: 'MT_CNUM_CD', dnbCode: 9392 },              //MT bus reg
+    { ecbType: 'MT_VAT_CD', dnbCode: 9336 },               //MT VAT
+    { ecbType: 'NL_KVK_CD', dnbCode: 6256 },               //NL trade reg
+    { ecbType: 'GEN_VAT_CD', dnbCode: 6273 },              //NL VAT
     { ecbType: 'NL_RSIN_CD', dnbCode: 23097 },
-    { ecbType: 'PT_NIF_CD', dnbCode: 2432 },              //PT VAT
+    { ecbType: 'PL_VAT_CD', dnbCode: 1435 },               //PL VAT (prefix PL)
+    { ecbType: 'PT_NIF_CD', dnbCode: 11659 },
+    { ecbType: 'GEN_VAT_CD', dnbCode: 2432 },              //PT VAT
+    { ecbType: 'RO_TRN_CD', dnbCode: 1436 },               //RO trade reg
+    { ecbType: 'RO_TAX_CD', dnbCode: 42083 },              //RO VAT
     { ecbType: 'SE_ORG_CD', dnbCode: 1861 },
-    { ecbType: 'SE_MOM_CD', dnbCode: 42067 },             //SE VAT
+    { ecbType: 'SE_MOM_CD', dnbCode: 42067 },              //SE VAT
+    { ecbType: 'SI_DDV_CD', dnbCode: 37716 },              //SI VAT
+                                                           //non EU
     { ecbType: 'CH_ID_CD', dnbCode: 13145 },
-    { ecbType: 'CH_NUMMER', dnbCode: 28865 },
+    { ecbType: 'CH_UID_CD', dnbCode: 28865 },
+    { ecbType: 'GEN_VAT_CD', dnbCode: 1440 },              //CH VAT
     { ecbType: 'GB_CRN_CD', dnbCode: 2541 },
+    { ecbType: 'GB_FSR_CD', dnbCode: 33482 },
+    { ecbType: 'GB_VAT_CD', dnbCode: 2550 },               //GB VAT
+    { ecbType: 'GEN_NBR_ENTTY_CD', dnbCode: 9372 },        //GI
     { ecbType: 'NO_NBR_CD', dnbCode: 1699 },
-    { ecbType: 'GEN_VAT_CD', dnbCode: 42066 },            //NO VAT
+    { ecbType: 'GEN_VAT_CD', dnbCode: 42066 },             //NO VAT
     { ecbType: 'US_EIN_CD', dnbCode: 6863 },
     { ecbType: 'GEN_NBR_ENTTY_CD', dnbCode: 12444 },
     { ecbType: 'CA_BN_CD', dnbCode: 33905 },
-    { ecbType: 'AU_ACN_CD', dnbCode: 1335 },
-    { ecbType: 'AU_ABN_CD', dnbCode: 17891 },
-    { ecbType: 'GEN_NBR_ENTTY_CD', dnbCode: 33961 },
-    { ecbType: 'HK_CR_CD', dnbCode: 1358 }
+    { ecbType: 'MX_RFC_CD', dnbCode: 1374 },               //MX
+    { ecbType: 'AU_ACN_CD', dnbCode: 1335 },               //AU bus reg
+    { ecbType: 'AU_ABN_CD', dnbCode: 17891 },              //AU bus reg
+    { ecbType: 'GEN_NBR_ENTTY_CD', dnbCode: 33961 },       //NZ nus reg
+    { ecbType: 'GEN_TRD_RGSTR_ENTTY_CD', dnbCode: 578 },
+    { ecbType: 'HK_CR_CD', dnbCode: 1358 },
+    { ecbType: 'GEN_NBR_ENTTY_CD', dnbCode: 1357 },        //HK bus reg
+    { ecbType: 'IN_CIN_CD', dnbCode: 1362 },               //IN
+    { ecbType: 'JP_CN_CD', dnbCode: 32475 },               //JP bus reg
+    { ecbType: 'MY_CRN_CD', dnbCode: 1372 }                //MY
 ];
 
 const mapDnbCodes2EcbNatIDs = new Map(ecbNatIDsDnbCodes.map( mapping => {
@@ -235,12 +869,14 @@ const mapDnbCodes2EcbNatIDs = new Map(ecbNatIDsDnbCodes.map( mapping => {
 
         switch(arrEcbNatIDs.length) {
             case 0:
-                console.log(`Please map D&B registration number type code ${mapping.dnbCode}`);
+                console.log(`Please map D&B registration number type code ${JSON.stringify(mapping.dnbCode)}`);
 
                 break;
             case 1:
                 //Instantiate a regular expression object on the ECB national ID object
-                if(arrEcbNatIDs[0].regExp) { arrEcbNatIDs[0].objRegEx = new RegExp(arrEcbNatIDs[0].regExp) }
+                if(arrEcbNatIDs[0].regExp) {
+                    arrEcbNatIDs[0].objRegExp = new RegExp(arrEcbNatIDs[0].regExp)
+                }
 
                 //Connect the D&B type code to the ECB national ID object
                 keyValuePair[1] = arrEcbNatIDs[0];
@@ -1334,32 +1970,86 @@ const ecbLegalForms = [
 ]
 
 const ecbLegalFormsDnbCodes = [
-    { ecbCode: 'DK80', dnbCode: 509 },
-    { ecbCode: 'DK60', dnbCode: 510 },
-    { ecbCode: 'SE49', dnbCode: 1824 },
-    { ecbCode: 'GB500', dnbCode: 2547 },
-    { ecbCode: 'BE014', dnbCode: 56 },
+//    { ecbCode: '', dnbCode: 46 },
+    { ecbCode: 'AT201', dnbCode: 11780 },
+    { ecbCode: 'AT202', dnbCode: 11782},
+    { ecbCode: 'AT103', dnbCode: 11784},
+    { ecbCode: 'BE014', dnbCode: 53 },
+    { ecbCode: 'BE610', dnbCode: 56 },
     { ecbCode: 'BE015', dnbCode: 33723 },
-    { ecbCode: 'BE151', dnbCode: 45 },   //Misc
+    { ecbCode: 'BG105', dnbCode: 9522 },
+    { ecbCode: 'CY103', dnbCode: 9580 }, 
+    { ecbCode: 'CZ112', dnbCode: 18085 }, 
+    { ecbCode: 'CZ121', dnbCode: 18087 }, 
+//    { ecbCode: '', dnbCode: 7102 }, 
+//    { ecbCode: '', dnbCode: 7103 }, 
+    { ecbCode: 'DE108', dnbCode: 7105 }, 
+    { ecbCode: 'DE206', dnbCode: 7113 }, 
+    { ecbCode: 'DE201', dnbCode: 7114 }, 
+    { ecbCode: 'DE108', dnbCode: 7115 }, 
+    { ecbCode: 'DE108', dnbCode: 7118 }, 
+    { ecbCode: 'EU100', dnbCode: 13142 }, 
+//    { ecbCode: '', dnbCode: 24214 }, 
+    { ecbCode: 'DK60', dnbCode: 509 }, 
+    { ecbCode: 'DK80', dnbCode: 510 },
+//    { ecbCode: '', dnbCode: 514 }, 
+    { ecbCode: 'DK250', dnbCode: 2419 },
+    { ecbCode: 'EE102', dnbCode: 9612 },
+    { ecbCode: 'ESC07', dnbCode: 5264 },
+    { ecbCode: 'ESC04', dnbCode: 5265 },
+//    { ecbCode: '', dnbCode: 5273 },
+    { ecbCode: 'ESC11', dnbCode: 5277 },
+//    { ecbCode: '', dnbCode: 5437 },
+    { ecbCode: 'FI12', dnbCode: 572 },
+//    { ecbCode: '', dnbCode: 37158 },
+//    { ecbCode: '', dnbCode: 37161 },
+    { ecbCode: 'FR5202', dnbCode: 37174 },
+    { ecbCode: 'FR5308', dnbCode: 37178 },
+//    { ecbCode: '', dnbCode: 37201 },
+    { ecbCode: 'FR5499', dnbCode: 37202 },
+    { ecbCode: 'FR5599', dnbCode: 37227 },
+    { ecbCode: 'FR5710', dnbCode: 37253 },
+    { ecbCode: 'FR5720', dnbCode: 37254 },
+    { ecbCode: 'FR6220', dnbCode: 37258 },
+    { ecbCode: 'HU114', dnbCode: 18306 },
+    { ecbCode: 'HU113', dnbCode: 18308 },
+    { ecbCode: 'IE07', dnbCode: 2528 },
+    { ecbCode: 'IE05', dnbCode: 2529 },
+    { ecbCode: 'IE01', dnbCode: 21392 },
+    { ecbCode: 'IE02', dnbCode: 29431 },
+//    { ecbCode: '', dnbCode: 29437 },
+    { ecbCode: 'IT703', dnbCode: 1867 },
+    { ecbCode: 'IT701', dnbCode: 1868 },
+    { ecbCode: 'LT102', dnbCode: 9760 },
+    { ecbCode: 'LU03', dnbCode: 58 },
+    { ecbCode: 'LV103', dnbCode: 9738 },
+//   { ecbCode: '', dnbCode: 477 },
+    { ecbCode: 'MT030', dnbCode: 9778 },
+    { ecbCode: 'NL206', dnbCode: 5267 },
+    { ecbCode: 'NL302', dnbCode: 5514 },
+    { ecbCode: 'NL303', dnbCode: 6156 },
     { ecbCode: 'NL101', dnbCode: 6160 },
     { ecbCode: 'NL101', dnbCode: 6161 },
     { ecbCode: 'NL102', dnbCode: 6163 },
     { ecbCode: 'NL102', dnbCode: 6164 },
     { ecbCode: 'NL201', dnbCode: 6167 },
-    { ecbCode: 'NL202', dnbCode: 6177 },
     { ecbCode: 'NL203', dnbCode: 6175 },
-    { ecbCode: 'NL206', dnbCode: 5267 },
-    { ecbCode: 'NL207', dnbCode: 6150 }, //Misc
-    { ecbCode: 'NL302', dnbCode: 5514 },
-    { ecbCode: 'NL303', dnbCode: 6156 },
+    { ecbCode: 'NL202', dnbCode: 6177 },
+//    { ecbCode: '', dnbCode: 6187 },
     { ecbCode: 'NL304', dnbCode: 6193 },
-    { ecbCode: 'DE206', dnbCode: 7113 },
-    { ecbCode: 'FR5660', dnbCode: 37227 },
-    { ecbCode: 'FR5710', dnbCode: 37253 },
-    { ecbCode: 'FR5720', dnbCode: 37254 },
+    { ecbCode: 'PLA117', dnbCode: 18400 },
+    { ecbCode: 'PLA116', dnbCode: 18401 },
+    { ecbCode: 'PT151', dnbCode: 2411 },
+//    { ecbCode: '', dnbCode: 2416 },
+    { ecbCode: 'PT121', dnbCode: 2418 },
+    { ecbCode: 'PT122', dnbCode: 2421 },
+    { ecbCode: 'PT131', dnbCode: 2422 },
+    { ecbCode: 'RO102', dnbCode: 9851 },
+    { ecbCode: 'SE49', dnbCode: 1824 },
+//    { ecbCode: '', dnbCode: 1827 }
 ];
 
-const mapDnb2EcbLegalFormCodes = new Map(ecbLegalFormsDnbCodes.map( mapping => {
+const mapDnb2EcbLegalFormCodes4 = new Map(ecbLegalFormsDnbCodes.map( mapping => {
     const arrEcbLegalForms = ecbLegalForms.filter( ecbLegalForm => ecbLegalForm.ecbCode === mapping.ecbCode );
 
     const keyValuePair = [ mapping.dnbCode, null ];
@@ -1379,9 +2069,61 @@ const mapDnb2EcbLegalFormCodes = new Map(ecbLegalFormsDnbCodes.map( mapping => {
     }
 
     return keyValuePair;
-}
-));
+} ));
+
+const mapDnb2EcbLegalFormCodes750 = new Map([
+    [ 31148, "RW500" ],
+    [ 31178, "RW400" ],
+    [ 31217, "RW100" ],
+    [ 31169, "RW500" ],
+    [ 31173, "RW500" ],
+    [ 31231, "RW100" ],
+    [ 34101, "RW500" ],
+    [ 31194, "RW100" ],
+    [ 31165, "RW300" ],
+    [ 34095, "RW500" ],
+    [ 31154, "RW300" ],
+    [ 31216, "RW200" ],
+    [ 31152, "RW500" ]
+]);
+
+const ecbCountryCodesEU = new Set([
+    "AT",
+    "BE",
+    "BG",
+    "CY",
+    "CZ",
+    "DE",
+    "DK",
+    "EE",
+    "ES",
+    "FI",
+    "FR",
+    "GP",
+    "GR",
+    "HR",
+    "HU",
+    "IE",
+    "IT",
+    "LT",
+    "LU",
+    "LV",
+    "MC",
+    "MT",
+    "NL",
+    "PL",
+    "PT",
+    "RO",
+    "SE",
+    "SI",
+    "SK", 
+]);
 
 export {
-    regNumTypeIsVAT, mapDnbCodes2EcbNatIDs, mapDnb2EcbLegalFormCodes
+    regNumTypeIsVAT,
+    mapDnbDeCourts2Ecb,
+    mapDnbCodes2EcbNatIDs,
+    mapDnb2EcbLegalFormCodes4,
+    mapDnb2EcbLegalFormCodes750,
+    ecbCountryCodesEU
 };
