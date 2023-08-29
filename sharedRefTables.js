@@ -23,48 +23,85 @@
 // Some registration numbers are VAT#s
 // Gentle reminder -> ... is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND ...
 const regNumTypeIsVAT = new Set([
-    99,    //BE
-    480,   //LU
-    481,   //IT
-    522,   //DK
-    552,   //FI
-    1351,  //CZ
-    1361,  //HU
-    1366,  //Non EU, IL
-    1423,  //AT
-    1425,  //BG
-    1428,  //EE
-    1429,  //GR
-    1431,  //LV
-    1432,  //LI
-    1433,  //LT
-    1435,  //PL
-    1438,  //SK
-    1440,  //Non EU, CH
-    1699,  //Non EU, NO
-    1861,  //SE
-    2080,  //FR
-    2432,  //PT
-    2472,  //ES
-    2530,  //IE
-    2550,  //Non EU, GB
-    6273,  //NL
-    6865,
-    6867,  //DE
-    9125,
-    9336,  //MT
-    15169, //Non EU, ZA
-    17283, //CY
-    30080,
-    30081,
-    33317,
-    33318,
-    33323,
-    36137, //HU
-    37716, //SI
-    42066, //Non EU, NO
-    42067, //SE
-    42083  //RO
+    99, //BE_Member
+    480, //LU_Member
+    481, //IT_Member
+    521, //DK_Member
+    552, //FI_Member
+    1332, //AD_Other
+    1334, //AR_RoW
+    1339, //BO_RoW
+    1340, //BR_RoW
+    1344, //CL_RoW
+    1346, //CO_RoW
+    1348, //CR_RoW
+    1351, //CZ_Member
+    1352, //DO_RoW
+    1353, //EC_RoW
+    1354, //SV_RoW
+    1356, //GT_RoW
+    1361, //HU_Member
+    1367, //JM_RoW
+    1374, //MX_RoW
+    1378, //NI_RoW
+    1380, //PA_RoW
+    1381, //PY_RoW
+    1382, //PE_RoW
+    1391, //TH_RoW
+    1394, //UY_RoW
+    1395, //VE_RoW
+    1396, //VE_RoW
+    1423, //AT_Member
+    1425, //BG_Member
+    1428, //EE_Member
+    1431, //LV_Member
+    1432, //LI_EFTA
+    1433, //LT_Member
+    1435, //PL_Member
+    1437, //RU_Other
+    1438, //SK_Member
+    1440, //CH_EFTA
+    1442, //TR_Candidate
+    1861, //SE_Member
+    2080, //FR_Member
+    2432, //PT_Member
+    2472, //ES_Member
+    2530, //IE_Member
+    2550, //GB_Other
+    6273, //NL_Member
+    6863, //US_RoW
+    6867, //DE_Member
+    9125, //MC_Other
+    9330, //EG_RoW
+    9333, //IS_EFTA
+    9336, //MT_Member
+    9341, //AL_Candidate
+    13103, //PH_RoW
+    13111, //ID_RoW
+    14257, //HR_Member
+    14259, //GR_Member
+    15169, //ZA_RoW
+    17277, //MK_Candidate
+    17282, //BA_Other
+    17283, //CY_Member
+    17891, //AU_RoW
+    30080, //SK_Member
+    30081, //CZ_Member
+    30310, //XK_RoW
+    30317, //RS_Candidate
+    30318, //ME_Candidate
+    32167, //IN_RoW
+    33317, //AE_RoW
+    33318, //SA_RoW
+    33323, //IN_RoW
+    34766, //CA_RoW
+    34802, //DZ_RoW
+    36137, //HU_Member
+    37716, //SI_Member
+    37794, //SM_Other
+    42066, //NO_EFTA
+    42067, //SE_Member
+    42083  //RO_Member
 ]);
 
 const ecbDeCourts = [
