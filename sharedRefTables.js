@@ -2019,10 +2019,10 @@ const ecbLegalFormsDnbCodes = [
     { ecbCode: 'CZ112', dnbCode: 18085 }, 
     { ecbCode: 'CZ121', dnbCode: 18087 }, 
 //    { ecbCode: '', dnbCode: 7102 }, 
-//    { ecbCode: '', dnbCode: 7103 }, 
     { ecbCode: 'DE108', dnbCode: 7105 }, 
     { ecbCode: 'DE206', dnbCode: 7113 }, 
     { ecbCode: 'DE201', dnbCode: 7114 }, 
+    { ecbCode: 'DE108', dnbCode: 7103 }, 
     { ecbCode: 'DE108', dnbCode: 7115 }, 
     { ecbCode: 'DE108', dnbCode: 7118 }, 
     { ecbCode: 'EU100', dnbCode: 13142 }, 
@@ -2040,11 +2040,13 @@ const ecbLegalFormsDnbCodes = [
     { ecbCode: 'FI12', dnbCode: 572 },
 //    { ecbCode: '', dnbCode: 37158 },
 //    { ecbCode: '', dnbCode: 37161 },
+    { ecbCode: 'FR002', dnbCode: 477 },
     { ecbCode: 'FR5202', dnbCode: 37174 },
     { ecbCode: 'FR5308', dnbCode: 37178 },
 //    { ecbCode: '', dnbCode: 37201 },
     { ecbCode: 'FR5499', dnbCode: 37202 },
     { ecbCode: 'FR5599', dnbCode: 37227 },
+    { ecbCode: 'FR5699', dnbCode: 37252 },
     { ecbCode: 'FR5710', dnbCode: 37253 },
     { ecbCode: 'FR5720', dnbCode: 37254 },
     { ecbCode: 'FR6220', dnbCode: 37258 },
@@ -2060,7 +2062,6 @@ const ecbLegalFormsDnbCodes = [
     { ecbCode: 'LT102', dnbCode: 9760 },
     { ecbCode: 'LU03', dnbCode: 58 },
     { ecbCode: 'LV103', dnbCode: 9738 },
-//   { ecbCode: '', dnbCode: 477 },
     { ecbCode: 'MT030', dnbCode: 9778 },
     { ecbCode: 'NL206', dnbCode: 5267 },
     { ecbCode: 'NL302', dnbCode: 5514 },
@@ -2083,6 +2084,7 @@ const ecbLegalFormsDnbCodes = [
     { ecbCode: 'PT131', dnbCode: 2422 },
     { ecbCode: 'RO102', dnbCode: 9851 },
     { ecbCode: 'SE49', dnbCode: 1824 },
+    { ecbCode: 'SI103', dnbCode: 16542 }
 //    { ecbCode: '', dnbCode: 1827 }
 ];
 
@@ -2110,18 +2112,19 @@ const mapDnb2EcbLegalFormCodes4 = new Map(ecbLegalFormsDnbCodes.map( mapping => 
 
 const mapDnb2EcbLegalFormCodes750 = new Map([
     [ 31148, "RW500" ],
-    [ 31178, "RW400" ],
-    [ 31217, "RW100" ],
+    [ 31152, "RW500" ],
+    [ 31154, "RW300" ],
+    [ 31165, "RW300" ],
     [ 31169, "RW500" ],
     [ 31173, "RW500" ],
-    [ 31231, "RW100" ],
-    [ 34101, "RW500" ],
+    [ 31178, "RW400" ],
     [ 31194, "RW100" ],
-    [ 31165, "RW300" ],
-    [ 34095, "RW500" ],
-    [ 31154, "RW300" ],
     [ 31216, "RW200" ],
-    [ 31152, "RW500" ]
+    [ 31217, "RW100" ],
+    [ 31231, "RW100" ],
+    [ 31301, "RW100" ],
+    [ 34095, "RW500" ],
+    [ 34101, "RW500" ]
 ]);
 
 const ecbCountryCodesEU = new Set([
