@@ -2015,7 +2015,8 @@ const ecbLegalFormsDnbCodes = [
     { ecbCode: 'BE610', dnbCode: 56 },
     { ecbCode: 'BE015', dnbCode: 33723 },
     { ecbCode: 'BG105', dnbCode: 9522 },
-    { ecbCode: 'CY103', dnbCode: 9580 }, 
+    { ecbCode: 'CY103', dnbCode: 9580 },
+    { ecbCode: 'CZ111', dnbCode: 18251 },
     { ecbCode: 'CZ112', dnbCode: 18085 }, 
     { ecbCode: 'CZ121', dnbCode: 18087 }, 
 //    { ecbCode: '', dnbCode: 7102 }, 
@@ -2084,7 +2085,8 @@ const ecbLegalFormsDnbCodes = [
     { ecbCode: 'PT131', dnbCode: 2422 },
     { ecbCode: 'RO102', dnbCode: 9851 },
     { ecbCode: 'SE49', dnbCode: 1824 },
-    { ecbCode: 'SI103', dnbCode: 16542 }
+    { ecbCode: 'SI103', dnbCode: 16542 },
+    { ecbCode: 'SK111', dnbCode: 18252 }
 //    { ecbCode: '', dnbCode: 1827 }
 ];
 
@@ -2115,13 +2117,16 @@ const mapDnb2EcbLegalFormCodes750 = new Map([
     [ 31152, "RW500" ],
     [ 31154, "RW300" ],
     [ 31165, "RW300" ],
+    [ 31166, "RW600" ],
     [ 31169, "RW500" ],
     [ 31173, "RW500" ],
     [ 31178, "RW400" ],
+    [ 31189, "RW400" ],
     [ 31194, "RW100" ],
     [ 31216, "RW200" ],
     [ 31217, "RW100" ],
     [ 31231, "RW100" ],
+    [ 31282, "RW600" ],
     [ 31301, "RW100" ],
     [ 34095, "RW500" ],
     [ 34101, "RW500" ]
