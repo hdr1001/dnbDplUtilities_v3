@@ -2007,7 +2007,7 @@ const ecbLegalForms = [
 ]
 
 const ecbLegalFormsDnbCodes = [
-//    { ecbCode: '', dnbCode: 46 },
+    { ecbCode: 'AT201', dnbCode: 46 },
     { ecbCode: 'AT201', dnbCode: 11780 },
     { ecbCode: 'AT202', dnbCode: 11782},
     { ecbCode: 'AT103', dnbCode: 11784},
