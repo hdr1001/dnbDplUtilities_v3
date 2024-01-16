@@ -2045,6 +2045,7 @@ const ecbLegalFormsDnbCodes = [
     { ecbCode: 'FR5202', dnbCode: 37174 },
     { ecbCode: 'FR5308', dnbCode: 37178 },
 //    { ecbCode: '', dnbCode: 37201 },
+    { ecbCode: 'FR5498', dnbCode: 37201 },
     { ecbCode: 'FR5499', dnbCode: 37202 },
     { ecbCode: 'FR5599', dnbCode: 37227 },
     { ecbCode: 'FR5699', dnbCode: 37252 },
