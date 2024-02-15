@@ -883,7 +883,7 @@ const ecbNatIDsDnbCodes = [
     { ecbType: 'GB_VAT_CD', dnbCode: 2550 },               //GB VAT
     { ecbType: 'GEN_NBR_ENTTY_CD', dnbCode: 9372 },        //GI
     { ecbType: 'GEN_NBR_ENTTY_CD', dnbCode: 9375 },        //IS
-    { ecbType: 'GEN_TAX_CD', dnbCode: 9333},
+    { ecbType: 'GEN_TAX_CD', dnbCode: 9333 },
     { ecbType: 'NO_NBR_CD', dnbCode: 1699 },
     { ecbType: 'GEN_VAT_CD', dnbCode: 42066 },             //NO VAT
     { ecbType: 'US_EIN_CD', dnbCode: 6863 },
@@ -898,6 +898,8 @@ const ecbNatIDsDnbCodes = [
     { ecbType: 'GEN_NBR_ENTTY_CD', dnbCode: 1357 },        //HK bus reg
     { ecbType: 'IN_CIN_CD', dnbCode: 1362 },               //IN
     { ecbType: 'JP_CN_CD', dnbCode: 32475 },               //JP bus reg
+    { ecbType: 'KR_TIN_CD', dnbCode: 1387 },               //KR
+    { ecbType: 'GEN_NBR_ENTTY_CD', dnbCode: 36837 },       //KY
     { ecbType: 'MY_CRN_CD', dnbCode: 1372 }                //MY
 ];
 
