@@ -882,6 +882,8 @@ const ecbNatIDsDnbCodes = [
     { ecbType: 'GB_FSR_CD', dnbCode: 33482 },
     { ecbType: 'GB_VAT_CD', dnbCode: 2550 },               //GB VAT
     { ecbType: 'GEN_NBR_ENTTY_CD', dnbCode: 9372 },        //GI
+    { ecbType: 'GEN_NBR_ENTTY_CD', dnbCode: 9375 },        //IS
+    { ecbType: 'GEN_TAX_CD', dnbCode: 9333},
     { ecbType: 'NO_NBR_CD', dnbCode: 1699 },
     { ecbType: 'GEN_VAT_CD', dnbCode: 42066 },             //NO VAT
     { ecbType: 'US_EIN_CD', dnbCode: 6863 },
