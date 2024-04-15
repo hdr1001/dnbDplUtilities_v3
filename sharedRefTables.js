@@ -884,23 +884,29 @@ const ecbNatIDsDnbCodes = [
     { ecbType: 'GEN_NBR_ENTTY_CD', dnbCode: 9372 },        //GI
     { ecbType: 'GEN_NBR_ENTTY_CD', dnbCode: 9375 },        //IS
     { ecbType: 'GEN_TAX_CD', dnbCode: 9333 },
+    { ecbType: 'IM_RN_CD', dnbCode: 33460}                 //IM
     { ecbType: 'NO_NBR_CD', dnbCode: 1699 },
     { ecbType: 'GEN_VAT_CD', dnbCode: 42066 },             //NO VAT
+    { ecbType: 'TR_VKN_CD', dnbCode: 1442 },               //TR
     { ecbType: 'US_EIN_CD', dnbCode: 6863 },
     { ecbType: 'GEN_NBR_ENTTY_CD', dnbCode: 12444 },
     { ecbType: 'CA_BN_CD', dnbCode: 33905 },
     { ecbType: 'MX_RFC_CD', dnbCode: 1374 },               //MX
     { ecbType: 'AU_ACN_CD', dnbCode: 1335 },               //AU bus reg
     { ecbType: 'AU_ABN_CD', dnbCode: 17891 },              //AU bus reg
-    { ecbType: 'GEN_NBR_ENTTY_CD', dnbCode: 33961 },       //NZ nus reg
+    { ecbType: 'GEN_NBR_ENTTY_CD', dnbCode: 33961 },       //NZ bus reg
     { ecbType: 'GEN_TRD_RGSTR_ENTTY_CD', dnbCode: 578 },
+    { ecbType: 'CN_CC_CD', dnbCode: 32476 },
     { ecbType: 'HK_CR_CD', dnbCode: 1358 },
     { ecbType: 'GEN_NBR_ENTTY_CD', dnbCode: 1357 },        //HK bus reg
+    { ecbType: 'ID_NPWP_CD', dnbCode: 1363 },              //ID
     { ecbType: 'IN_CIN_CD', dnbCode: 1362 },               //IN
     { ecbType: 'JP_CN_CD', dnbCode: 32475 },               //JP bus reg
     { ecbType: 'KR_TIN_CD', dnbCode: 1387 },               //KR
     { ecbType: 'GEN_NBR_ENTTY_CD', dnbCode: 36837 },       //KY
-    { ecbType: 'MY_CRN_CD', dnbCode: 1372 }                //MY
+    { ecbType: 'MY_CRN_CD', dnbCode: 1372 },               //MY
+    { ecbType: 'GEN_TAX_CD', dnbCode: 13103 }              //PH
+    { ecbType: 'TH_NBR_CD', dnbCode: 1391 }                //TH
 ];
 
 const mapDnbCodes2EcbNatIDs = new Map(ecbNatIDsDnbCodes.map( mapping => {
@@ -2032,6 +2038,7 @@ const ecbLegalFormsDnbCodes = [
     { ecbCode: 'DE108', dnbCode: 7118 }, 
     { ecbCode: 'EU100', dnbCode: 13142 }, 
 //    { ecbCode: '', dnbCode: 24214 }, 
+    { ecbCode: 'DK30', dnbCode: 506 }, 
     { ecbCode: 'DK60', dnbCode: 509 }, 
     { ecbCode: 'DK80', dnbCode: 510 },
 //    { ecbCode: '', dnbCode: 514 }, 
@@ -2056,6 +2063,8 @@ const ecbLegalFormsDnbCodes = [
     { ecbCode: 'FR5710', dnbCode: 37253 },
     { ecbCode: 'FR5720', dnbCode: 37254 },
     { ecbCode: 'FR6220', dnbCode: 37258 },
+    { ecbCode: 'GR905', dnbCode: 16236 },
+    { ecbCode: 'HR02', dnbCode: 16037 },
     { ecbCode: 'HU114', dnbCode: 18306 },
     { ecbCode: 'HU113', dnbCode: 18308 },
     { ecbCode: 'IE07', dnbCode: 2528 },
@@ -2065,7 +2074,7 @@ const ecbLegalFormsDnbCodes = [
 //    { ecbCode: '', dnbCode: 29437 },
     { ecbCode: 'IT703', dnbCode: 1867 },
     { ecbCode: 'IT701', dnbCode: 1868 },
-    { ecbCode: 'LT102', dnbCode: 9760 },
+    { ecbCode: 'LT102', dnbCode: 9756 },
     { ecbCode: 'LU03', dnbCode: 58 },
     { ecbCode: 'LV103', dnbCode: 9738 },
     { ecbCode: 'MT030', dnbCode: 9778 },
@@ -2088,7 +2097,9 @@ const ecbLegalFormsDnbCodes = [
     { ecbCode: 'PT121', dnbCode: 2418 },
     { ecbCode: 'PT122', dnbCode: 2421 },
     { ecbCode: 'PT131', dnbCode: 2422 },
+    { ecbCode: 'PT161', dnbCode: 18873 },
     { ecbCode: 'RO102', dnbCode: 9851 },
+    { ecbCode: 'SE41', dnbCode: 1823 },
     { ecbCode: 'SE49', dnbCode: 1824 },
     { ecbCode: 'SI103', dnbCode: 16542 },
     { ecbCode: 'SK111', dnbCode: 18252 }
