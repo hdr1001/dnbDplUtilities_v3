@@ -820,7 +820,6 @@ const ecbNatIDs = [
 
 const ecbNatIDsDnbCodes = [
     { ecbType: 'AT_FB_CD', dnbCode: 1336 },                //AT bus reg
-    { ecbType: 'GEN_VAT_CD', dnbCode: 1423 },              //AT VAT
     { ecbType: 'BA_MBS_CD', dnbCode: 9349 },               //BA bus reg
     { ecbType: 'BA_JIB_CD', dnbCode: 17282 },              //BA trade reg
     { ecbType: 'BE_OND_CD', dnbCode: 800 },                //BE bus reg
@@ -840,11 +839,9 @@ const ecbNatIDsDnbCodes = [
     { ecbType: 'ES_NIF_CD', dnbCode: 2472 },               //ES VAT
     { ecbType: 'FR_SIREN_CD', dnbCode: 2078 },             //FR bus reg
     { ecbType: 'GEN_VAT_CD', dnbCode: 2080 },              //FR VAT
-    { ecbType: 'GEN_TRD_RGSTR_ENTTY_CD', dnbCode: 2079 },  //FR CoC
     { ecbType: 'FI_Y_CD', dnbCode: 553 },                  //FI bus reg
     { ecbType: 'FI_ALV_CD', dnbCode: 552 },                //FI VAT
     { ecbType: 'GR_AFM_CD', dnbCode: 14259 },              //GR
-    { ecbType: 'GEN_TRD_RGSTR_ENTTY_CD', dnbCode: 14246 }, //GR CoC
     { ecbType: 'HR_MB_CD', dnbCode: 1426 },                //HR trade reg
     { ecbType: 'HR_OIB_CD', dnbCode: 14257 },              //HR tax
     { ecbType: 'HU_CEG_CD', dnbCode: 1359 },               //HU trade reg (no dashes)
@@ -885,7 +882,7 @@ const ecbNatIDsDnbCodes = [
     { ecbType: 'GEN_NBR_ENTTY_CD', dnbCode: 9372 },        //GI
     { ecbType: 'GEN_NBR_ENTTY_CD', dnbCode: 9375 },        //IS
     { ecbType: 'GEN_TAX_CD', dnbCode: 9333 },
-    { ecbType: 'IM_RN_CD', dnbCode: 33460},                //IM
+    { ecbType: 'IM_RN_CD', dnbCode: 33460 },                //IM
     { ecbType: 'NO_NBR_CD', dnbCode: 1699 },
     { ecbType: 'GEN_VAT_CD', dnbCode: 42066 },             //NO VAT
     { ecbType: 'TR_VKN_CD', dnbCode: 1442 },               //TR
