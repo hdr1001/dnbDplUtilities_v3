@@ -872,6 +872,7 @@ const ecbNatIDsDnbCodes = [
     { ecbType: 'SE_ORG_CD', dnbCode: 1861 },
     { ecbType: 'SE_MOM_CD', dnbCode: 42067 },              //SE VAT
     { ecbType: 'SI_DDV_CD', dnbCode: 37716 },              //SI VAT
+    { ecbType: 'SK_ICO_CD', dnbCode: 18088 },              //SK bus reg
                                                            //non EU
     { ecbType: 'CH_ID_CD', dnbCode: 13145 },
     { ecbType: 'CH_UID_CD', dnbCode: 28865 },
