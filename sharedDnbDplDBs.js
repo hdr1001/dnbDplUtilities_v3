@@ -476,7 +476,21 @@ const dnbDplDBs = {
                                 }
 
                                 break;
-                            
+                            case 9360:
+                                if(sRegNum.slice(0, 2) === 'HE') {
+                                    ret = 'C' + sRegNum.slice(2);
+                                }
+                                else if(sRegNum.slice(0, 2) === 'AE') {
+                                    ret = 'O' + sRegNum.slice(2);
+                                }
+                                else if(sRegNum.slice(0, 1) === 'Σ') {
+                                    ret = 'P' + sRegNum.slice(1);
+                                }
+                                else {
+                                  ret = '';
+                                }
+
+                                break;
                             case 13145:
                                 if(sRegNum.length === 13) {
                                     ret = sRegNum.slice(0, 2) + '-' + sRegNum.slice(2, 5) + '-' + sRegNum.slice(5, 12) + '-' + sRegNum.slice(12)
