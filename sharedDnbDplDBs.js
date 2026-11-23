@@ -476,6 +476,7 @@ const dnbDplDBs = {
                                 }
 
                                 break;
+
                             case 9360:
                                 if(sRegNum.slice(0, 2) === 'HE') {
                                     ret = 'C' + sRegNum.slice(2);
@@ -491,13 +492,27 @@ const dnbDplDBs = {
                                 }
 
                                 break;
+
                             case 13145:
                                 if(sRegNum.length === 13) {
                                     ret = sRegNum.slice(0, 2) + '-' + sRegNum.slice(2, 5) + '-' + sRegNum.slice(5, 12) + '-' + sRegNum.slice(12)
                                 }
                             
                                 break;
-                
+
+                            case 17283:
+                                if(sRegNum.slice(0, 2) === 'CY') {
+                                    ret = sRegNum.slice(2);
+                                }
+                                else if(sRegNum.length === 9) {
+                                  ret = sRegNum;
+                                }
+                                else {
+                                  ret = '';
+                                }
+                                
+                                break;
+                                
                             case 17891:
                                 if(sRegNum.length === 11) {
                                     ret = sRegNum.slice(0, 2) + ' ' + sRegNum.slice(2, 5) + ' ' + sRegNum.slice(5, 8) + ' ' + sRegNum.slice(8)
