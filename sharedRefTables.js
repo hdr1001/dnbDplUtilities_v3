@@ -826,11 +826,11 @@ const ecbNatIDsDnbCodes = [
     { ecbType: 'GEN_VAT_CD', dnbCode: 99 },                //BE VAT
     { ecbType: 'BG_UIC_CD', dnbCode: 9428 },               //BG trade reg
     { ecbType: 'BG_VAT_CD', dnbCode: 1425 },               //BG VAT
-    { ecbType: 'CY_CBCID_CD', dnbCode: 9360 },
-    { ecbType: 'CY_VAT_CD', dnbCode: 17283 },              //CY VAT
+    { ecbType: 'CY_DRCOR_CD', dnbCode: 9360 },
+    { ecbType: 'CY_TIC_CD', dnbCode: 17283 },              //CY VAT
     { ecbType: 'CZ_ICO_CD', dnbCode: 1350 },
     { ecbType: 'GEN_VAT_CD', dnbCode: 1351 },              //CZ VAT
-    { ecbType: 'DE_TRD_RGSTR_CD', dnbCode: 6862 },         //DE trade reg
+    { ecbType: 'DE_TRD_RGSTR_CD', dnbCode: 44550 },         //DE trade reg
     { ecbType: 'DE_VAT_CD', dnbCode: 6867 },               //DE VAT
     { ecbType: 'DK_CVR_CD', dnbCode: 521 },
     { ecbType: 'DK_SE_CD', dnbCode: 522 },                 //DK VAT
@@ -865,8 +865,7 @@ const ecbNatIDsDnbCodes = [
     { ecbType: 'GEN_VAT_CD', dnbCode: 6273 },              //NL VAT
     { ecbType: 'NL_RSIN_CD', dnbCode: 23097 },
     { ecbType: 'PL_VAT_CD', dnbCode: 1435 },               //PL VAT (prefix PL)
-    { ecbType: 'PT_NIF_CD', dnbCode: 11659 },
-    { ecbType: 'GEN_VAT_CD', dnbCode: 2432 },              //PT VAT
+    { ecbType: 'PT_NIF_CD', dnbCode: 2432 },
     { ecbType: 'RO_TRN_CD', dnbCode: 1436 },               //RO trade reg
     { ecbType: 'RO_TAX_CD', dnbCode: 42083 },              //RO VAT
     { ecbType: 'SE_ORG_CD', dnbCode: 1861 },
@@ -898,7 +897,6 @@ const ecbNatIDsDnbCodes = [
     { ecbType: 'CN_CC_CD', dnbCode: 32476 },
     { ecbType: 'HK_CR_CD', dnbCode: 1358 },
     { ecbType: 'GEN_NBR_ENTTY_CD', dnbCode: 1357 },        //HK bus reg
-    { ecbType: 'ID_NPWP_CD', dnbCode: 1363 },              //ID
     { ecbType: 'IN_CIN_CD', dnbCode: 1362 },               //IN
     { ecbType: 'JP_CN_CD', dnbCode: 32475 },               //JP bus reg
     { ecbType: 'KR_TIN_CD', dnbCode: 1387 },               //KR
