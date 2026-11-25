@@ -735,6 +735,7 @@ const ecbNatIDs = [
     { type: "GR_AFM_CD", rank: 1, isoCountry: "GR", name: "Arithmós Forologikou Mitroou A-Fi-Mi  Αριθμός Φορολογικού Μητρώου Α.Φ.Μ.", shortName: "AFM", class: "Tax code", regExp: "\\d{9}" }, 
     { type: "GR_IMO_CD", rank: 1, isoCountry: "GR", name: "International Maritime Organisation number", shortName: "IMO", class: "Trade register number", regExp: "\\d{7}" }, 
     { type: "HK_CR_CD", rank: 1, isoCountry: "HK", name: "Corporate Registry Number", shortName: "CR-No.", class: "Business register number", regExp: "[A-Z]{0,1}\\d{7}" }, 
+    { type: "HK_BR_CD", rank: 2, isoCountry: "HK", name: "Business Registration Number", shortName: "", class: "Business register number", regExp: "\d{8}|(C)\d{7}" }, 
     { type: "HR_MB_CD", rank: 2, isoCountry: "HR", name: "Matični broj poslovnog subjekta", shortName: "MB", class: "Business register number", regExp: "\\d{8}" }, 
     { type: "HR_MBS_CD", rank: 3, isoCountry: "HR", name: "Matični broj subjekta trgovačkog suda", shortName: "MBS", class: "Trade register number", regExp: "[0-1]\\d{8}" }, 
     { type: "HR_OIB_CD", rank: 1, isoCountry: "HR", name: "Osobni identifikacijski broj", shortName: "OIB", class: "Tax code", regExp: "\\d{11}" }, 
@@ -895,7 +896,7 @@ const ecbNatIDsDnbCodes = [
     { ecbType: 'GEN_NBR_ENTTY_CD', dnbCode: 33961 },       //NZ bus reg
     { ecbType: 'GEN_TRD_RGSTR_ENTTY_CD', dnbCode: 578 },
     { ecbType: 'CN_CC_CD', dnbCode: 32476 },
-    { ecbType: 'HK_CR_CD', dnbCode: 1358 },
+    { ecbType: 'HK_BR_CD', dnbCode: 1358 },
     { ecbType: 'GEN_NBR_ENTTY_CD', dnbCode: 1357 },        //HK bus reg
     { ecbType: 'IN_CIN_CD', dnbCode: 1362 },               //IN
     { ecbType: 'JP_CN_CD', dnbCode: 32475 },               //JP bus reg
